@@ -9,14 +9,10 @@ Angel Augusto Agudelo Zapata
 
 ### Estudiantes
 
-**Nombres:**  Andrés Felipe Mogollón España   
-  **Código:** 1110558722
-
-**Nombres:**  Felipe Borja   
-  **Código:** 00
-
-**Nombres:**  Juan Darío Malagon  
-  **Código:** 000
+**Nombres:**
+- Andrés Felipe Mogollón España   
+- Felipe Borja   
+- Juan Darío Malagon  
 
 **Fecha:** 19/08/2025  
 
