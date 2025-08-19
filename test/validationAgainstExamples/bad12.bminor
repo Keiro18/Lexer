@@ -1,0 +1,2 @@
+// Escape inválido en char
+c: char = '\x';

@@ -1,0 +1,12 @@
+// Esto es un comentario estilo C++
+// py lexer.py test/validationAgainstExamples/good14.bminor
+// python lexer.py test/validationAgainstExamples/good14.bminor
+
+x: integer = 5;
+
+/* Esto es
+   un comentario
+   estilo C */
+y: float = 3.14;
+
+/* comentario en una sola línea */ z: boolean = true;

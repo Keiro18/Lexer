@@ -1,0 +1,7 @@
+// Diferentes formatos de literales float
+f1: float = 3.14;
+f2: float = .25;
+f3: float = 10.;
+f4: float = 2e10;
+f5: float = 6.022e23;
+f6: float = 1.6E-19;

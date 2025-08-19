@@ -1,0 +1,7 @@
+// Caracteres especiales y escapes
+c1: char = 'a';
+c2: char = '\n';
+c3: char = '\t';
+c4: char = '\\';
+c5: char = '\"';
+msg: string = "Hola\nMundo\t\"con comillas\" y barra \\";

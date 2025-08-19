@@ -1,0 +1,7 @@
+// Todos los operadores
+a: integer = 1 + 2 - 3 * 4 / 5 % 6 ^ 7;
+b: boolean = (a == 10) || (a != 5) && (a <= 20) && (a >= 2) && (a < 100) && (a > 0);
+c: integer = 0;
+c++;
+c--;
+d: boolean = !false;

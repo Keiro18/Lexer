@@ -1,0 +1,2 @@
+// Operador no soportado
+x: integer = 10 <<< 5;
