@@ -18,5 +18,5 @@ El analizador se encarga de **leer un código fuente** y **dividirlo en tokens**
 ## 🚀 Ejecución
 1. Clonar el repositorio:  
    ```bash
-   git clone https://github.com/usuario/analizador-lexico-sly.git
-   cd analizador-lexico-sly
+   git clone https://github.com/Keiro18/Lexer.git
+   cd Lexer
