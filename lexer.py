@@ -1,75 +1,105 @@
+# lexer.py
+#
+# Analizador Léxico para el lenguaje B-Minor
+
 import sly
 
 class Lexer(sly.Lexer):
+    # Lista de tokens
     tokens = {
+        # Palabras reservadas
         ARRAY, AUTO, BOOLEAN, CHAR, ELSE, FALSE, FLOAT, FOR, FUNCTION,
         IF, INTEGER, PRINT, RETURN, STRING, TRUE, VOID, WHILE,
-        ID, NUMBER,
-        EQEQ, NOTEQ, LE, GE
+
+        # Literales
+        INT_LITERAL, FLOAT_LITERAL, CHAR_LITERAL, STRING_LITERAL,
+
+        # Identificadores
+        ID,
+
+        # Operadores lógicos y comparación
+        LOR, LAND, EQ, NE, LE, LT, GE, GT, INC, DEC, NOT
     }
 
-    literals = '+-*/%^=()[]{}:;,<>!'
+    # Símbolos de un solo carácter
+    literals = '+-*/%^=()[]{}:;,.'
 
+    # Ignorar espacios y tabulaciones
     ignore = ' \t\r'
 
-    @_(r'\n+')
-    def ignore_newline(self, t):
-        self.lineno += t.value.count('\n')
-
+    # Ignorar comentarios C++
     @_(r'//.*')
     def ignore_cppcomment(self, t):
         pass
 
+    # Ignorar comentarios estilo C
     @_(r'/\*(.|\n)*?\*/')
     def ignore_comment(self, t):
         self.lineno += t.value.count('\n')
 
-    # Palabras reservadas e identificadores
+    # Contar saltos de línea
+    @_(r'\n+')
+    def ignore_newline(self, t):
+        self.lineno += t.value.count('\n')
+
+    # Palabras reservadas y IDs
     ID = r'[_a-zA-Z]\w*'
-    ID['array'] = ARRAY
-    ID['auto']  = AUTO
-    ID['boolean'] = BOOLEAN
-    ID['char']  = CHAR
-    ID['integer'] = INTEGER
-    ID['true'] = TRUE
-    ID['false'] = FALSE
+    ID['array']    = ARRAY
+    ID['auto']     = AUTO
+    ID['boolean']  = BOOLEAN
+    ID['char']     = CHAR
+    ID['else']     = ELSE
+    ID['false']    = FALSE
+    ID['float']    = FLOAT
+    ID['for']      = FOR
     ID['function'] = FUNCTION
-    ID['for'] = FOR
-    ID['if'] = IF
-    ID['print'] = PRINT
-    ID['return'] = RETURN
-    ID['void'] = VOID
-    ID['while'] = WHILE
-    ID['float'] = FLOAT
-    ID['string'] = STRING
-    ID['else'] = ELSE
+    ID['if']       = IF
+    ID['integer']  = INTEGER
+    ID['print']    = PRINT
+    ID['return']   = RETURN
+    ID['string']   = STRING
+    ID['true']     = TRUE
+    ID['void']     = VOID
+    ID['while']    = WHILE
 
-    # Números
-    @_(r'\d+')
-    def NUMBER(self, t):
-        t.value = int(t.value)
-        return t
-
-    # Operadores dobles
-    EQEQ = r'=='
-    NOTEQ = r'!='
+    # Operadores múltiples
+    LOR = r'\|\|'
+    LAND = r'&&'
+    EQ = r'=='
+    NE = r'!='
     LE = r'<='
     GE = r'>='
+    LT = r'<'
+    GT = r'>'
+    INC = r'\+\+'
+    DEC = r'--'
+    NOT = r'!'
+
+    # Literales numéricos
+    FLOAT_LITERAL = r'([+-]?((\d+\.\d*)|(\.\d+))([eE][+-]?\d+)?|\d+[eE][+-]?\d+)'
+    INT_LITERAL = r'[+-]?\d+'
+
+    # Literal de carácter (incluyendo escapes válidos)
+    CHAR_LITERAL = r"'(\\[abefnrtv\\\'\"]|\\0x[0-9A-Fa-f]{2}|[ -~])'"
+
+    # Literal de cadena
+    STRING_LITERAL = r'"(\\[abefnrtv\\\'\"]|\\0x[0-9A-Fa-f]{2}|[ -~])*"'
 
     def error(self, t):
         print(f"Line {self.lineno}: Bad character '{t.value[0]}'")
         self.index += 1
+
 
 def tokenize(txt):
     lexer = Lexer()
     for tok in lexer.tokenize(txt):
         print(tok)
 
+
 if __name__ == '__main__':
     import sys
     if len(sys.argv) != 2:
         print("usage: python lexer.py filename")
         exit(1)
-
     with open(sys.argv[1], encoding='utf-8') as f:
         tokenize(f.read())
