@@ -10,6 +10,7 @@ class Lexer(sly.Lexer):
         # Palabras reservadas
         ARRAY, AUTO, BOOLEAN, CHAR, ELSE, FALSE, FLOAT, FOR, FUNCTION,
         IF, INTEGER, PRINT, RETURN, STRING, TRUE, VOID, WHILE,
+        SWITCH, DO,
 
         # Literales
         INT_LITERAL, FLOAT_LITERAL, CHAR_LITERAL, STRING_LITERAL,
@@ -20,6 +21,7 @@ class Lexer(sly.Lexer):
         # Operadores lógicos y comparación
         LOR, LAND, EQ, NE, LE, LT, GE, GT, INC, DEC, NOT
     }
+
 
     # Símbolos de un solo carácter
     literals = '+-*/%^=()[]{}:;,.'
@@ -61,6 +63,9 @@ class Lexer(sly.Lexer):
     ID['true']     = TRUE
     ID['void']     = VOID
     ID['while']    = WHILE
+    ID['switch']   = SWITCH
+    ID['do']       = DO
+
 
     # Operadores múltiples
     LOR = r'\|\|'

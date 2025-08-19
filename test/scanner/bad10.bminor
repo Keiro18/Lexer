@@ -1,0 +1,3 @@
+switc (x) {   // error: 'switc' no es 'switch'
+    case 1: print 1;
+}

@@ -1,0 +1,11 @@
+// Prueba de los nuevos tokens
+i: integer = 0;
+do {
+    i++;
+} while (i < 5);
+
+switch (i) {
+    case 1: print 1;
+    case 2: print 2;
+    default: print 0;
+}
