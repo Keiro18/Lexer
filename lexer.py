@@ -35,9 +35,17 @@ class Lexer(sly.Lexer):
         pass
 
     # Ignorar comentarios estilo C
+    # Comentarios estilo C bien formados
     @_(r'/\*(.|\n)*?\*/')
     def ignore_comment(self, t):
         self.lineno += t.value.count('\n')
+
+    # Comentarios estilo C sin cierre (error)
+    @_(r'/\*([^*]|\*(?!/))*$')
+    def error_unclosed_comment(self, t):
+        print(f"Line {self.lineno}: Unclosed comment")
+        self.index = len(self.text)   # Forzar fin del análisis
+
 
     # Contar saltos de línea
     @_(r'\n+')
@@ -82,7 +90,7 @@ class Lexer(sly.Lexer):
 
     # Literales numéricos
     FLOAT_LITERAL = r'([+-]?((\d+\.\d*)|(\.\d+))([eE][+-]?\d+)?|\d+[eE][+-]?\d+)'
-    INT_LITERAL = r'[+-]?\d+'
+    INT_LITERAL = r'[+-]?\d+(?![A-Za-z_])'
 
     # Literal de carácter (incluyendo escapes válidos)
     CHAR_LITERAL = r"'(\\[abefnrtv\\\'\"]|\\0x[0-9A-Fa-f]{2}|[ -~])'"
