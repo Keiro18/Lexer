@@ -100,7 +100,7 @@ Se diseñaron dos conjuntos de pruebas:
 Los casos se prueban manualmente con el comando:  
 
 ```bash
-python bminor.py --scan archivo.bminor
+python sieve.bminor --scan archivo.bminor
 ```  
 
 Ejemplo de ejecución:  
