@@ -16,6 +16,7 @@ Angel Augusto Agudelo Zapata
 
 **Fecha:** 19/08/2025  
 
+---
 
 ### Ingeniería de Sistemas y Computación – Jornada Especial
 ## Introducción
@@ -23,6 +24,8 @@ Angel Augusto Agudelo Zapata
 Este proyecto implementa un **analizador léxico (lexer)** en **Python** utilizando la librería [SLY (Sly Lex-Yacc)](https://github.com/dabeaz/sly), una herramienta moderna para la construcción de analizadores léxicos y sintácticos.  
 
 El analizador se encarga de **leer un código fuente** y **dividirlo en tokens**, que son las unidades básicas del lenguaje (palabras reservadas, identificadores, operadores, literales, etc.). Estos tokens luego pueden ser utilizados en la etapa de **análisis sintáctico** para construir un compilador o intérprete.  
+
+---
 
 ## ✨ Características
 - Implementado en **Python 3**.  
@@ -35,13 +38,25 @@ El analizador se encarga de **leer un código fuente** y **dividirlo en tokens**
   - Símbolos especiales.  
 - Manejo básico de errores léxicos.  
 
+---
+
 ## 🚀 Ejecución
 1. Clonar el repositorio:  
-   ```bash
-   git clone https://github.com/Keiro18/Lexer.git
-   cd Lexer
+   `git clone https://github.com/Keiro18/Lexer.git`  
+   `cd Lexer`
 
+2. Ejecutar el analizador sobre un archivo:  
+   `python  lexer.py /relativepath.bminor`
 
+3. Ejecutar todos los casos de prueba:  
+   - Carpeta `test/scanner` (buenos y malos):  
+     `python bminor.py --test scanner`  
+   - Carpeta `test/validationAgainstExamples`:  
+     `python bminor.py --test validationAgainstExamples`  
+   - Si no se especifica carpeta, por defecto ejecuta `test/scanner`:  
+     `python bminor.py --test`
+
+---
 
 ## 📑 Resumen  
 Este proyecto implementa un **analizador léxico (lexer)** en **Python** utilizando la librería [SLY (Sly Lex-Yacc)](https://github.com/dabeaz/sly).  
@@ -53,7 +68,7 @@ Se implementaron:
 - Operadores aritméticos, lógicos y de comparación.  
 - Literales enteros, flotantes, caracteres y cadenas.  
 - Comentarios estilo **C** (`/* */`) y **C++** (`//`).  
-- Manejo de errores básicos para caracteres no reconocidos.  
+- Manejo de errores básicos para caracteres no reconocidos y comentarios no cerrados.  
 
 ---
 
@@ -62,26 +77,26 @@ Se implementaron:
 | **Token**        | **Expresión Regular** | **Ejemplo Válido** | **Ejemplo Inválido** |
 |------------------|------------------------|---------------------|----------------------|
 | ID               | `[_a-zA-Z]\w*`        | `var1`, `nombre`   | `1abc`, `@id`        |
-| INT_LITERAL      | `[+-]?\d+`            | `42`, `-7`         | `12a`, `++3`         |
+| INT_LITERAL      | `[+-]?\d+(?![A-Za-z_])` | `42`, `-7`        | `12a`, `++3`         |
 | FLOAT_LITERAL    | `([+-]?(\d+\.\d*|\.\d+)([eE][+-]?\d+)?|\d+[eE][+-]?\d+)` | `3.14`, `2e10` | `1.2.3`, `e10` |
-| CHAR_LITERAL     | `'(...caracter...)'`   | `'a'`, `'\n'`     | `'ab'`, `''`         |
+| CHAR_LITERAL     | `'([\x20-\x7E]|\\[abefnrtv\\'\"e]|\\0x[0-9A-Fa-f]{2})'` | `'a'`, `'\n'` | `'ab'`, `''` |
 | STRING_LITERAL   | `"( ... )*"`           | `"hola"`, `"\t"`  | `"unterminated`      |
-| Operadores       | `+ - * / % ^ == != <= >= < > && || ++ -- !` | `a+b`, `x&&y` | `a===b`, `x&y` |  
-| Palabras clave   | `if, while, for, else, return...` | `if`, `while` | `iff`, `whiles` |  
+| Operadores       | `+ - * / % ^ = == != <= >= < > && || ++ -- !` | `a+b`, `x&&y` | `a===b`, `x&y` |  
+| Palabras clave   | `if, for, else, return...` | `if`, `while` | `iff`, `whiles` |  
 
 ---
 
 ## ⚠️ Manejo de Errores  
 - Si se encuentra un **carácter no válido**, el lexer muestra un mensaje de error con el número de línea:  
-  ```
-  Line 3: Bad character '@'
-  ```  
-- Los errores no detienen el análisis de todo el archivo; simplemente **se ignoran los caracteres inválidos** y se continúa.  
+  `Line 3: Bad character '@'`  
+- Si se encuentra un **comentario sin cierre**, el lexer lo reporta:  
+  `Line 1: Unclosed comment`  
+- Los errores hacen que el proceso termine con código de salida `1`.  
 
 ---
 
 ## 🔍 Casos de Prueba  
-Se diseñaron dos conjuntos de pruebas:  
+Se diseñaron tres conjuntos de pruebas:  
 
 1. **Pruebas válidas (`test/scanner/good*.bminor`)**  
    - Contienen identificadores, números, strings y operadores correctamente escritos.  
@@ -92,28 +107,22 @@ Se diseñaron dos conjuntos de pruebas:
    - Verifican que el lexer arroje mensajes de error y termine con código de salida `1`.  
 
 3. **Validación contra ejemplos (`test/validationAgainstExamples/`)**  
-   - Incluyen operadores, formatos de `float`, escapes en caracteres y strings, identificadores límite, y comentarios de tipo C/C++.  
+   - Archivos que cubren la gramática completa, incluyendo todos los operadores, literales con formato complejo, escapes, arrays y funciones.  
+   - Sirven para asegurar que el lexer coincide con los ejemplos oficiales del enunciado.  
 
 ---
 
 ## 💻 Ejecución de Pruebas  
-Los casos se prueban manualmente con el comando:  
 
-```bash
-python sieve.bminor --scan archivo.bminor
-```  
+Ejemplo de ejecución de un archivo:  
+`python bminor.py --scan test/scanner/good0.bminor`
 
-Ejemplo de ejecución:  
-
-```
->>> python bminor.py --scan test/scanner/good0.bminor
-Token(type='ID', value='x', lineno=1, index=0)
-Token(type='EQ', value='==', lineno=1, index=2)
-Token(type='INT_LITERAL', value='10', lineno=1, index=4)
-```  
+Ejemplo de ejecución de todas las pruebas:  
+`python bminor.py --test scanner`  
+`python bminor.py --test validationAgainstExamples`
 
 ---
 
 ## ✅ Conclusión  
 El analizador léxico cumple con los objetivos planteados: reconocer palabras reservadas, operadores, literales e identificadores del lenguaje **B-Minor**.  
-Los casos de prueba muestran que funciona correctamente en entradas válidas y que detecta adecuadamente errores en entradas inválidas.  
+Los casos de prueba muestran que funciona correctamente en entradas válidas y que detecta adecuadamente errores en entradas inválidas, incluyendo comentarios no cerrados y números mal formados.  

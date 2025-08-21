@@ -3,7 +3,8 @@
 # Punto de entrada para ejecutar el analizador léxico de B-Minor 2025
 # Uso:
 #   python bminor.py --scan archivo.bminor
-#   python bminor.py --test   (ejecuta todos los archivos en test/scanner)
+#   python bminor.py --test scanner
+#   python bminor.py --test validationAgainstExamples
 
 import sys
 import os
@@ -22,14 +23,17 @@ def scan_file(filename):
         print(f"Error: {e}")
         return 1  # error
 
-def run_tests():
-    TEST_DIR = "test/scanner"
-    files = sorted(os.listdir(TEST_DIR))
+def run_tests(test_dir):
+    if not os.path.exists(test_dir):
+        print(f"⚠️ Carpeta {test_dir} no encontrada.")
+        return
+
+    files = sorted(os.listdir(test_dir))
     total = len(files)
     passed = 0
 
     for fname in files:
-        path = os.path.join(TEST_DIR, fname)
+        path = os.path.join(test_dir, fname)
         print(f"\n🔎 Probando {fname}...")
         result = subprocess.run(
             [sys.executable, "bminor.py", "--scan", path],
@@ -56,11 +60,21 @@ def run_tests():
                 print("❌ ERROR (pasó como válido, debería fallar)")
                 print(output)
 
-    print(f"\nResumen: {passed}/{total} pruebas correctas")
+        else:
+            # En validationAgainstExamples quizás no todos empiecen con good/bad
+            # Así que solo imprimimos el resultado
+            if exitcode == 0:
+                print("✅ OK (tokenizado)")
+                passed += 1
+            else:
+                print("❌ ERROR (falló)")
+                print(output)
+
+    print(f"\nResumen: {passed}/{total} pruebas correctas en {test_dir}")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Uso: python bminor.py --scan archivo.bminor | --test")
+        print("Uso: python bminor.py --scan archivo.bminor | --test [scanner|validationAgainstExamples]")
         sys.exit(1)
 
     if sys.argv[1] == "--scan":
@@ -72,9 +86,13 @@ if __name__ == "__main__":
         sys.exit(status)
 
     elif sys.argv[1] == "--test":
-        run_tests()
+        if len(sys.argv) == 2:
+            test_dir = "test/scanner"
+        else:
+            test_dir = f"test/{sys.argv[2]}"
+        run_tests(test_dir)
         sys.exit(0)
 
     else:
-        print("Opción no válida. Usa --scan o --test")
+        print("Opción no válida. Usa --scan o --test [carpeta]")
         sys.exit(1)
