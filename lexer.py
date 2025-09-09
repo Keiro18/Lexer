@@ -24,7 +24,7 @@ class Lexer(sly.Lexer):
 
 
     # Símbolos de un solo carácter
-    literals = '+-*/%^=()[]{}:;,.'
+    literals = '+-*/%^=()[]{}:;,'
 
     # Ignorar espacios y tabulaciones
     ignore = ' \t\r'
@@ -89,7 +89,8 @@ class Lexer(sly.Lexer):
     NOT = r'!'
 
     # Literales numéricos
-    FLOAT_LITERAL = r'([+-]?((\d+\.\d*)|(\.\d+))([eE][+-]?\d+)?|\d+[eE][+-]?\d+)'
+    FLOAT_LITERAL = r'([0-9]+\.[0-9]+|\.[0-9]+)([eE][+-]?[0-9]+)?|[0-9]+[eE][+-]?[0-9]+'
+
     INT_LITERAL = r'[+-]?\d+(?![A-Za-z_])'
 
     # Literal de carácter (incluyendo escapes válidos)
@@ -101,6 +102,13 @@ class Lexer(sly.Lexer):
     def error(self, t):
         print(f"Line {self.lineno}: Bad character '{t.value[0]}'")
         self.index += 1
+
+    # Caso especial: número seguido de '.' sin dígitos después = error
+    @_(r'[0-9]+\.(?![0-9])')
+    def invalid_float(self, t):
+        print(f"Line {self.lineno}: Invalid float literal '{t.value}'")
+        self.index += len(t.value)
+
 
 
 def tokenize(txt):
