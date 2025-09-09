@@ -21,8 +21,9 @@ class Statement(Node):
 class Expression(Node):
     pass
 
+
 # =====================================================================
-# Definiciones
+# Definiciones de alto nivel
 # =====================================================================
 @dataclass
 class Program(Statement):
@@ -37,6 +38,7 @@ class VarDecl(Declaration):
     name : str
     type : Expression
     value: Expression = None
+
 
 '''
 Statement
@@ -65,7 +67,24 @@ Statement
   |
   +-- Assignment
 '''
-# Expresiones
+
+# =====================================================================
+# Nodos de Control de Flujo
+# =====================================================================
+@dataclass
+class WhileStmt(Statement):
+    condition: Expression
+    body     : Statement
+
+@dataclass
+class DoWhileStmt(Statement):
+    body     : Statement
+    condition: Expression
+
+
+# =====================================================================
+# Expresiones básicas
+# =====================================================================
 
 @dataclass
 class BinOper(Expression):
@@ -107,15 +126,65 @@ class Boolean(Literal):
         assert isinstance(self.value, bool), "Value debe ser un 'boolean'"
         self.type = 'boolean'
 
-'''
-  - Char
-  - String
-  - Increment (pre/post fijo)
-  - Decrement
-  - FuncCall
 
-  +-- Location ('load'/'store')
-    -- VarLoc
-    -- ArrayLoc
+# =====================================================================
+# Literales adicionales
+# =====================================================================
+@dataclass
+class Char(Literal):
+    value : str
+    def __post_init__(self):
+        assert isinstance(self.value, str) and len(self.value) == 1, "Value debe ser un 'char'"
+        self.type = 'char'
 
-'''
+@dataclass
+class String(Literal):
+    value : str
+    def __post_init__(self):
+        assert isinstance(self.value, str), "Value debe ser un 'string'"
+        self.type = 'string'
+
+
+# =====================================================================
+# Incremento / Decremento
+# =====================================================================
+@dataclass
+class PreInc(Expression):
+    expr: Expression
+
+@dataclass
+class PreDec(Expression):
+    expr: Expression
+
+@dataclass
+class PostInc(Expression):
+    expr: Expression
+
+@dataclass
+class PostDec(Expression):
+    expr: Expression
+
+
+# =====================================================================
+# Funciones y llamadas
+# =====================================================================
+@dataclass
+class FuncCall(Expression):
+    name: str
+    args: List[Expression] = field(default_factory=list)
+
+
+# =====================================================================
+# Ubicaciones (Locations)
+# =====================================================================
+@dataclass
+class Location(Expression):
+    name: str
+
+@dataclass
+class VarLoc(Location):
+    pass
+
+@dataclass
+class ArrayLoc(Location):
+    index: Expression
