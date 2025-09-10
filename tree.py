@@ -1,4 +1,4 @@
-# grammar.py
+# tree.py
 import logging
 import sly
 from rich import print
@@ -295,11 +295,11 @@ class Parser(sly.Parser):
 
     @_('INT_LITERAL')
     def factor(self, p):
-        return _L(Integer(p.INT_LITERAL), p.lineno)
+        return _L(Integer(int(p.INT_LITERAL)), p.lineno)
 
     @_('FLOAT_LITERAL')
     def factor(self, p):
-        return _L(Float(p.FLOAT_LITERAL), p.lineno)
+        return _L(Float(float(p.FLOAT_LITERAL)), p.lineno)
 
     @_('CHAR_LITERAL')
     def factor(self, p):
@@ -411,4 +411,7 @@ if __name__ == '__main__':
     if filename:
         txt = open(filename, encoding='utf-8').read()
         ast = parse(txt)
-        print(json.dumps(ast_to_dict(ast), indent=2))
+        from printer import ASTPrinter
+
+        printer = ASTPrinter()
+        printer.print(ast)
