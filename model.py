@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
 from multimethod import multimeta
 from typing import List, Union, Optional
+from graphviz import Digraph
 
 # =====================================================================
-# Clases base
+# Visitor base
 # =====================================================================
 class Visitor(metaclass=multimeta):
     def visit(self, node, *args, **kwargs):
@@ -24,6 +25,116 @@ class Node:
         return " " * level + repr(self)
 
 
+# =====================================================================
+# ASTPrinter usando el Visitor
+# =====================================================================
+class ASTPrinter(Visitor):
+    node_defaults = {
+        "shape": "box",
+        "color": "deepskyblue",
+        "style": "filled",
+    }
+    edge_defaults = {
+        "arrowhead": "none",
+    }
+
+    def __init__(self):
+        self.dot = Digraph("AST")
+        self.dot.attr("node", **self.node_defaults)
+        self.dot.attr("edge", **self.edge_defaults)
+        self._seq = 0
+
+    @property
+    def name(self):
+        self._seq += 1
+        return f"n{self._seq:02d}"
+
+    @classmethod
+    def render(cls, n: Node):
+        dot = cls()
+        n.accept(dot)
+        return dot.dot
+
+    # ---- Visitors ----
+    def visit_Program(self, n: "Program"):
+        name = self.name
+        self.dot.node(name, label="Program")
+        for stmt in n.body:
+            self.dot.edge(name, stmt.accept(self))
+        return name
+
+    def visit_Decl(self, n: "Decl"):
+        name = self.name
+        self.dot.node(name, label=f"Decl\n{n.name}:{n.type.pretty()}")
+        if n.value:
+            self.dot.edge(name, n.value.accept(self))
+        return name
+
+    def visit_BinOper(self, n: "BinOper"):
+        name = self.name
+        self.dot.node(name, label=f"{n.oper}", shape="circle")
+        self.dot.edge(name, n.left.accept(self))
+        self.dot.edge(name, n.right.accept(self))
+        return name
+
+    def visit_UnaryOper(self, n: "UnaryOper"):
+        name = self.name
+        self.dot.node(name, label=f"{n.oper}", shape="circle")
+        self.dot.edge(name, n.expr.accept(self))
+        return name
+
+    def visit_Literal(self, n: "Literal"):
+        name = self.name
+        self.dot.node(name, label=f"{n.value}:{n.type}")
+        return name
+
+    # ---- Nodos concretos ----
+    def visit_Integer(self, n: "Integer"):
+        name = self.name
+        self.dot.node(name, f"Integer({n.value})")
+        return name
+
+    def visit_Float(self, n: "Float"):
+        name = self.name
+        self.dot.node(name, f"Float({n.value})")
+        return name
+
+    def visit_Boolean(self, n: "Boolean"):
+        name = self.name
+        self.dot.node(name, f"Boolean({n.value})")
+        return name
+
+    def visit_Char(self, n: "Char"):
+        name = self.name
+        self.dot.node(name, f"Char({n.value})")
+        return name
+
+    def visit_String(self, n: "String"):
+        name = self.name
+        self.dot.node(name, f"String({n.value})")
+        return name
+
+    def visit_Type(self, n: "Type"):
+        name = self.name
+        self.dot.node(name, f"Type({n.name})")
+        return name
+
+    def visit_Var(self, n: "Var"):
+        name = self.name
+        self.dot.node(name, f"Var({n.name})")
+        return name
+
+    def visit_ArrayAccess(self, n: "ArrayAccess"):
+        name = self.name
+        self.dot.node(name, "ArrayAccess")
+        self.dot.edge(name, n.array.accept(self))
+        self.dot.edge(name, n.index.accept(self))
+        return name
+
+
+# =====================================================================
+# Clases base de AST
+# =====================================================================
 @dataclass
 class Statement(Node):
     def pretty(self, level: int = 0) -> str:
@@ -149,113 +260,14 @@ class String(Literal):
 
 
 # =====================================================================
-# Expresiones
+# Variables y expresiones
 # =====================================================================
 @dataclass
-class BinOper(Expression):
-    oper: str
-    left: Expression
-    right: Expression
-
-    def pretty(self, level=0):
-        return (
-            " " * level
-            + f"BinOper({self.oper}, left={self.left.pretty()}, right={self.right.pretty()})"
-        )
-
-
-@dataclass
-class UnaryOper(Expression):
-    oper: str
-    expr: Expression
-
-    def pretty(self, level=0):
-        return " " * level + f"UnaryOper({self.oper}, expr={self.expr.pretty()})"
-
-
-@dataclass
-class PreInc(Expression):
-    expr: Expression
-
-    def pretty(self, level=0):
-        return " " * level + f"PreInc({self.expr.pretty()})"
-
-
-@dataclass
-class PreDec(Expression):
-    expr: Expression
-
-    def pretty(self, level=0):
-        return " " * level + f"PreDec({self.expr.pretty()})"
-
-
-@dataclass
-class PostInc(Expression):
-    expr: Expression
-
-    def pretty(self, level=0):
-        return " " * level + f"PostInc({self.expr.pretty()})"
-
-
-@dataclass
-class PostDec(Expression):
-    expr: Expression
-
-    def pretty(self, level=0):
-        return " " * level + f"PostDec({self.expr.pretty()})"
-
-
-@dataclass
-class FuncCall(Expression):
-    name: str
-    args: List[Expression] = field(default_factory=list)
-
-    def pretty(self, level=0):
-        args_str = ", ".join(arg.pretty() for arg in self.args)
-        return " " * level + f"FuncCall({self.name}, args=[{args_str}])"
-
-
-@dataclass
-class Assign(Expression):
-    target: Expression
-    value: Expression
-
-    def pretty(self, level=0):
-        return (
-            " " * level
-            + f"Assign(target={self.target.pretty()}, value={self.value.pretty()})"
-        )
-
-
-# =====================================================================
-# Ubicaciones
-# =====================================================================
-@dataclass
-class Location(Expression):
+class Var(Expression):
     name: str
 
-    def pretty(self, level=0):
-        return " " * level + f"Location({self.name})"
-
-
-@dataclass
-class VarLoc(Location):
-    def pretty(self, level=0):
-        return " " * level + f"VarLoc({self.name})"
-
-
-@dataclass
-class Var(Location):
     def pretty(self, level=0):
         return " " * level + f"Var({self.name})"
-
-
-@dataclass
-class ArrayLoc(Location):
-    index: Expression
-
-    def pretty(self, level=0):
-        return " " * level + f"ArrayLoc({self.name}, index={self.index.pretty()})"
 
 
 @dataclass
@@ -267,134 +279,23 @@ class ArrayAccess(Expression):
         return " " * level + f"ArrayAccess(array={self.array.pretty()}, index={self.index.pretty()})"
 
 
-# =====================================================================
-# Declaraciones
-# =====================================================================
 @dataclass
-class ArrayDecl(Declaration):
-    name: str
-    type: Expression
-    dims: List[Expression] = field(default_factory=list)
-
-    def pretty(self, level=0):
-        dims_str = ", ".join(d.pretty() for d in self.dims)
-        return " " * level + f"ArrayDecl({self.name}, type={self.type.pretty()}, dims=[{dims_str}])"
-
-
-@dataclass
-class FuncDecl(Declaration):
-    name: str
-    type: FuncType
-    body: List[Statement] = field(default_factory=list)
-
-    def pretty(self, level=0):
-        body_str = "\n".join(stmt.pretty(level + 2) for stmt in self.body)
-        return " " * level + f"FuncDecl({self.name}, type={self.type.pretty()})\n{body_str}"
-
-
-@dataclass
-class Param(Declaration):
-    name: str
-    type: Expression
-
-    def pretty(self, level=0):
-        return " " * level + f"Param({self.name}, type={self.type.pretty()})"
-
-
-# =====================================================================
-# Sentencias de control de flujo
-# =====================================================================
-@dataclass
-class IfStmt(Statement):
-    condition: Expression
-    then_body: Statement
-    else_body: Optional[Statement] = None
-
-    def pretty(self, level=0):
-        result = " " * level + f"IfStmt(condition={self.condition.pretty()})\n"
-        result += self.then_body.pretty(level + 2)
-        if self.else_body:
-            result += "\n" + " " * level + "Else:\n" + self.else_body.pretty(level + 2)
-        return result
-
-
-@dataclass
-class WhileStmt(Statement):
-    condition: Expression
-    body: Statement
+class BinOper(Expression):
+    oper: str
+    left: Expression
+    right: Expression
 
     def pretty(self, level=0):
         return (
             " " * level
-            + f"WhileStmt(condition={self.condition.pretty()})\n{self.body.pretty(level+2)}"
+            + f"BinOper({self.oper}, {self.left.pretty()}, {self.right.pretty()})"
         )
 
 
 @dataclass
-class DoWhileStmt(Statement):
-    body: Statement
-    condition: Expression
+class UnaryOper(Expression):
+    oper: str
+    expr: Expression
 
     def pretty(self, level=0):
-        return (
-            " " * level
-            + f"DoWhileStmt(condition={self.condition.pretty()})\n{self.body.pretty(level+2)}"
-        )
-
-
-@dataclass
-class ForStmt(Statement):
-    init: Optional[Statement]
-    condition: Optional[Expression]
-    step: Optional[Statement]
-    body: Statement
-
-    def pretty(self, level=0):
-        return (
-            " " * level
-            + f"ForStmt(init={self.init.pretty() if self.init else None}, "
-              f"condition={self.condition.pretty() if self.condition else None}, "
-              f"step={self.step.pretty() if self.step else None})\n"
-              f"{self.body.pretty(level+2)}"
-        )
-
-
-@dataclass
-class BlockStmt(Statement):
-    body: List[Statement] = field(default_factory=list)
-
-    def pretty(self, level=0):
-        return " " * level + "Block:\n" + "\n".join(stmt.pretty(level + 2) for stmt in self.body)
-
-
-# =====================================================================
-# Sentencias adicionales
-# =====================================================================
-@dataclass
-class ReturnStmt(Statement):
-    value: Optional[Expression] = None
-
-    def pretty(self, level=0):
-        return " " * level + f"Return({self.value.pretty() if self.value else None})"
-
-
-@dataclass
-class PrintStmt(Statement):
-    args: List[Expression] = field(default_factory=list)
-
-    def pretty(self, level=0):
-        args_str = ", ".join(arg.pretty() for arg in self.args)
-        return " " * level + f"Print({args_str})"
-
-
-@dataclass
-class Assignment(Statement):
-    target: Location
-    value: Expression
-
-    def pretty(self, level=0):
-        return (
-            " " * level
-            + f"Assignment(target={self.target.pretty()}, value={self.value.pretty()})"
-        )
-# =====================================================================
+        return " " * level + f"UnaryOper({self.oper}, {self.expr.pretty()})"

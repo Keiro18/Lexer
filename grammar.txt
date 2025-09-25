@@ -79,19 +79,19 @@ Rule 75    empty -> <empty>
 
 Unused terminals:
 
-    FLOAT
-    FUNCTION
     SWITCH
-    INTEGER
-    VOID
-    FOR
-    STRING
-    ARRAY
     BOOLEAN
-    IF
-    AUTO
-    CHAR
     ELSE
+    ARRAY
+    IF
+    VOID
+    AUTO
+    FUNCTION
+    STRING
+    FOR
+    FLOAT
+    INTEGER
+    CHAR
 
 Terminals, with rules where they appear:
 

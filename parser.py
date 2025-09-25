@@ -1,4 +1,3 @@
-# parser.py
 import logging
 import sly
 from rich import print
@@ -6,6 +5,7 @@ from rich import print
 from lexer import Lexer
 from errors import error, errors_detected
 from model import *  # Todas las clases de nodos (Program, WhileStmt, ...)
+from model import ASTPrinter
 
 
 def _L(node, lineno=None):
@@ -38,12 +38,11 @@ class Parser(sly.Parser):
     def prog(self, p):
         lineno = first_lineno(p)
         prog = _L(Program(body=p.decl_list), lineno)
-        # Compatibilidad con pruebas antiguas que consultaban 'decls'
-        setattr(prog, "decls", prog.body)
+        setattr(prog, "decls", prog.body)  # compatibilidad con pruebas antiguas
         return prog
 
     # ------------------------------
-    # Declarations (tratamos statements como decls top-level)
+    # Declaraciones
     # ------------------------------
     @_("decl decl_list")
     def decl_list(self, p):
@@ -112,7 +111,7 @@ class Parser(sly.Parser):
         return _L(DoWhileStmt(body=p.stmt, condition=p.assignment), lineno)
 
     # ------------------------------
-    # Simple statements (incluye block_stmt)
+    # Simple statements
     # ------------------------------
     @_("print_stmt")
     @_("return_stmt")
@@ -120,7 +119,6 @@ class Parser(sly.Parser):
     @_("decl")
     @_("assignment ';'")
     def simple_stmt(self, p):
-        # p[0] será el nodo correspondiente (PrintStmt, ReturnStmt, BlockStmt, Assign...)
         return p[0]
 
     @_("PRINT opt_expr_list ';'")
@@ -139,23 +137,16 @@ class Parser(sly.Parser):
         return _L(BlockStmt(body=p.opt_stmt_list), lineno)
 
     # ------------------------------
-    # EXPRESSIONS: jerarquía de niveles
-    # assignment -> logical_or -> logical_and -> equality -> relational
-    # -> additive -> multiplicative -> unary -> postfix -> primary
+    # EXPRESSIONS
     # ------------------------------
-
-    # Top: assignment (lvalue '=' assignment) or logical_or
     @_("lval '=' assignment")
     @_("logical_or")
     def assignment(self, p):
         lineno = first_lineno(p)
         if hasattr(p, "lval") and hasattr(p, "assignment"):
-            # p.lval es un Location (Var o ArrayAccess)
             return _L(Assign(target=p.lval, value=p.assignment), lineno)
-        # fallback
         return p.logical_or
 
-    # logical OR
     @_("logical_or LOR logical_and")
     @_("logical_and")
     def logical_or(self, p):
@@ -164,7 +155,6 @@ class Parser(sly.Parser):
             return _L(BinOper(oper="||", left=p.logical_or, right=p.logical_and), lineno)
         return p.logical_and
 
-    # logical AND
     @_("logical_and LAND equality")
     @_("equality")
     def logical_and(self, p):
@@ -173,7 +163,6 @@ class Parser(sly.Parser):
             return _L(BinOper(oper="&&", left=p.logical_and, right=p.equality), lineno)
         return p.equality
 
-    # equality: ==, !=
     @_("equality EQ relational")
     @_("equality NE relational")
     @_("relational")
@@ -184,7 +173,6 @@ class Parser(sly.Parser):
             return _L(BinOper(oper=op, left=p.equality, right=p.relational), lineno)
         return p.relational
 
-    # relational: < <= > >=
     @_("relational LT additive")
     @_("relational LE additive")
     @_("relational GT additive")
@@ -204,18 +192,16 @@ class Parser(sly.Parser):
             return _L(BinOper(oper=op, left=p.relational, right=p.additive), lineno)
         return p.additive
 
-    # additive: + -
     @_("additive '+' multiplicative")
     @_("additive '-' multiplicative")
     @_("multiplicative")
     def additive(self, p):
         lineno = first_lineno(p)
         if hasattr(p, "additive") and hasattr(p, "multiplicative"):
-            op = p[1]  # '+' or '-'
+            op = p[1]
             return _L(BinOper(oper=op, left=p.additive, right=p.multiplicative), lineno)
         return p.multiplicative
 
-    # multiplicative: * / %
     @_("multiplicative '*' unary")
     @_("multiplicative '/' unary")
     @_("multiplicative '%' unary")
@@ -223,11 +209,10 @@ class Parser(sly.Parser):
     def multiplicative(self, p):
         lineno = first_lineno(p)
         if hasattr(p, "multiplicative") and hasattr(p, "unary"):
-            op = p[1]  # '*', '/', '%'
+            op = p[1]
             return _L(BinOper(oper=op, left=p.multiplicative, right=p.unary), lineno)
         return p.unary
 
-    # unary: prefix inc/dec, NOT, '-' or fallback to postfix
     @_("INC unary")
     @_("DEC unary")
     @_("NOT unary")
@@ -235,22 +220,16 @@ class Parser(sly.Parser):
     @_("postfix")
     def unary(self, p):
         lineno = first_lineno(p)
-        # pre-inc / pre-dec
         if hasattr(p, "INC"):
-            # pre-inc applied to the nested unary result
             return _L(PreInc(expr=p.unary), lineno)
         if hasattr(p, "DEC"):
             return _L(PreDec(expr=p.unary), lineno)
-        # not
         if hasattr(p, "NOT"):
-            # If you have UnaryOper use it; otherwise use UnaryOper with '!' operator
             return _L(UnaryOper(oper="!", expr=p.unary), lineno)
-        # unary minus
         if hasattr(p, "'-'"):
             return _L(UnaryOper(oper="-", expr=p.unary), lineno)
         return p.postfix
 
-    # postfix: primary (with possible chained INC/DEC)
     @_("postfix INC")
     def postfix(self, p):
         lineno = first_lineno(p)
@@ -265,7 +244,6 @@ class Parser(sly.Parser):
     def postfix(self, p):
         return p.primary
 
-    # primary: grouping, ID (optionally with index), literals, function call
     @_("'(' assignment ')'")
     @_("ID index")
     @_("ID")
@@ -277,55 +255,32 @@ class Parser(sly.Parser):
     @_("FALSE")
     def primary(self, p):
         lineno = first_lineno(p)
-
-        # grouping
-        if hasattr(p, "assignment") and p.assignment is not None:
+        if hasattr(p, "assignment"):
             return p.assignment
-
-        # ID with index -> ArrayAccess
         if hasattr(p, "ID") and hasattr(p, "index"):
             return _L(ArrayAccess(array=Var(p.ID), index=p.index), lineno)
-
-        # ID only -> Var location
         if hasattr(p, "ID") and not hasattr(p, "index"):
             return _L(Var(p.ID), lineno)
-
-        # literals
         if hasattr(p, "INT_LITERAL"):
-            try:
-                val = int(p.INT_LITERAL)
-            except Exception:
-                val = int(p.INT_LITERAL, 10)
-            return _L(Integer(value=val), lineno)
+            return _L(Integer(value=int(p.INT_LITERAL)), lineno)
         if hasattr(p, "FLOAT_LITERAL"):
             return _L(Float(value=float(p.FLOAT_LITERAL)), lineno)
         if hasattr(p, "CHAR_LITERAL"):
-            s = p.CHAR_LITERAL
-            # quitar comillas simples si están presentes
-            if len(s) >= 2 and s[0] == "'" and s[-1] == "'":
-                s = s[1:-1]
+            s = p.CHAR_LITERAL.strip("'")
             return _L(Char(value=s), lineno)
         if hasattr(p, "STRING_LITERAL"):
-            s = p.STRING_LITERAL
-            # quitar comillas dobles si están presentes
-            if len(s) >= 2 and s[0] == '"' and s[-1] == '"':
-                s = s[1:-1]
+            s = p.STRING_LITERAL.strip('"')
             return _L(String(value=s), lineno)
         if hasattr(p, "TRUE"):
             return _L(Boolean(value=True), lineno)
         if hasattr(p, "FALSE"):
             return _L(Boolean(value=False), lineno)
-
         return None
 
-    # index: '[' assignment ']'  (para ArrayAccess)
     @_("'[' assignment ']'")
     def index(self, p):
         return p.assignment
 
-    # ------------------------------
-    # LValues (para la izquierda de asignaciones)
-    # ------------------------------
     @_('ID')
     def lval(self, p):
         lineno = first_lineno(p)
@@ -337,39 +292,31 @@ class Parser(sly.Parser):
         return _L(ArrayLoc(name=p.ID, index=p.assignment), lineno)
 
     # ------------------------------
-    # Stubs para if/for (no pedidas aún)
+    # Stubs (if/for/expr opcional)
     # ------------------------------
     @_("empty")
-    def if_stmt_closed(self, p):
-        return None
+    def if_stmt_closed(self, p): return None
 
     @_("empty")
-    def if_stmt_open(self, p):
-        return None
+    def if_stmt_open(self, p): return None
 
     @_("empty")
-    def for_stmt_closed(self, p):
-        return None
+    def for_stmt_closed(self, p): return None
 
     @_("empty")
-    def for_stmt_open(self, p):
-        return None
+    def for_stmt_open(self, p): return None
 
     @_("empty")
-    def opt_expr(self, p):
-        return None
+    def opt_expr(self, p): return None
 
     @_("empty")
-    def opt_expr_list(self, p):
-        return []
-
+    def opt_expr_list(self, p): return []
 
     # ------------------------------
     # Helpers
     # ------------------------------
     @_("")
-    def empty(self, p):
-        return None
+    def empty(self, p): return None
 
     def error(self, p):
         lineno = p.lineno if p else "EOF"
@@ -378,7 +325,7 @@ class Parser(sly.Parser):
 
 
 # ------------------------------
-# AST -> dict helper (puede usarse por tests)
+# Funciones auxiliares
 # ------------------------------
 def ast_to_dict(node):
     if isinstance(node, list):
@@ -395,7 +342,6 @@ def parse(txt):
     return p.parse(l.tokenize(txt))
 
 
-# Helper para depurar tokens
 def debug_tokens(source):
     l = Lexer()
     for t in l.tokenize(source):
@@ -405,6 +351,17 @@ def debug_tokens(source):
 if __name__ == "__main__":
     # prueba rápida
     src = "do { x = x + 1; } while (x < 10);"
+    print("=== TOKENS ===")
     debug_tokens(src)
+    print("\n=== AST ===")
     ast = parse(src)
-    print(ast_to_dict(ast))
+    if ast:
+        # Mostrar AST en texto
+        print(ast.pretty())
+
+        # Generar grafo con Graphviz
+        dot = ASTPrinter.render(ast)
+        dot.render("ast_output", format="png", cleanup=True)
+        print("\nAST exportado como ast_output.png")
+    else:
+        print("No se generó AST (error de sintaxis)")
