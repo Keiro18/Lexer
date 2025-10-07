@@ -1,0 +1,102 @@
+digraph AST {
+	node [color=deepskyblue shape=box style=filled]
+	edge [arrowhead=none]
+	n01 [label=Program]
+	n02 [label="FuncDecl
+main()
+→ void"]
+	n03 [label=Body]
+	n02 -> n03
+	n04 [label="VarDecl
+board: array[2175] integer"]
+	n03 -> n04
+	n05 [label="VarDeclInit
+xmoves: array[2209] integer"]
+	n06 [label=InitList]
+	n05 -> n06
+	n07 [label=2 color=lightyellow]
+	n06 -> n07
+	n08 [label=1 color=lightyellow]
+	n06 -> n08
+	n09 [label="-" color=lightcoral shape=circle]
+	n10 [label=1 color=lightyellow]
+	n09 -> n10
+	n06 -> n09
+	n11 [label="-" color=lightcoral shape=circle]
+	n12 [label=2 color=lightyellow]
+	n11 -> n12
+	n06 -> n11
+	n13 [label="-" color=lightcoral shape=circle]
+	n14 [label=2 color=lightyellow]
+	n13 -> n14
+	n06 -> n13
+	n15 [label="-" color=lightcoral shape=circle]
+	n16 [label=1 color=lightyellow]
+	n15 -> n16
+	n06 -> n15
+	n17 [label=1 color=lightyellow]
+	n06 -> n17
+	n18 [label=2 color=lightyellow]
+	n06 -> n18
+	n03 -> n05
+	n19 [label="VarDeclInit
+ymoves: array[2271] integer"]
+	n20 [label=InitList]
+	n19 -> n20
+	n21 [label=1 color=lightyellow]
+	n20 -> n21
+	n22 [label=2 color=lightyellow]
+	n20 -> n22
+	n23 [label=2 color=lightyellow]
+	n20 -> n23
+	n24 [label=1 color=lightyellow]
+	n20 -> n24
+	n25 [label="-" color=lightcoral shape=circle]
+	n26 [label=1 color=lightyellow]
+	n25 -> n26
+	n20 -> n25
+	n27 [label="-" color=lightcoral shape=circle]
+	n28 [label=2 color=lightyellow]
+	n27 -> n28
+	n20 -> n27
+	n29 [label="-" color=lightcoral shape=circle]
+	n30 [label=2 color=lightyellow]
+	n29 -> n30
+	n20 -> n29
+	n31 [label="-" color=lightcoral shape=circle]
+	n32 [label=1 color=lightyellow]
+	n31 -> n32
+	n20 -> n31
+	n03 -> n19
+	n33 [label=If]
+	n34 [label=Call color=mediumpurple]
+	n35 [label=walk color=lightblue]
+	n34 -> n35 [label=func]
+	n36 [label=0 color=lightyellow]
+	n34 -> n36 [label=arg0]
+	n37 [label=0 color=lightyellow]
+	n34 -> n37 [label=arg1]
+	n38 [label=1 color=lightyellow]
+	n34 -> n38 [label=arg2]
+	n39 [label=board color=lightblue]
+	n34 -> n39 [label=arg3]
+	n40 [label=xmoves color=lightblue]
+	n34 -> n40 [label=arg4]
+	n41 [label=ymoves color=lightblue]
+	n34 -> n41 [label=arg5]
+	n33 -> n34 [label=cond]
+	n42 [label=Block]
+	n43 [label=Print]
+	n44 [label="\"SoluciÃ³n encontr...\"" color=lightyellow]
+	n43 -> n44
+	n42 -> n43
+	n33 -> n42 [label=then]
+	n45 [label=Block]
+	n46 [label=Print]
+	n47 [label="\"No existe soluciÃ...\"" color=lightyellow]
+	n46 -> n47
+	n45 -> n46
+	n33 -> n45 [label=else]
+	n03 -> n33
+	n01 -> n02
+}

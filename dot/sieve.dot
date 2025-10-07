@@ -1,0 +1,177 @@
+digraph AST {
+	node [color=deepskyblue shape=box style=filled]
+	edge [arrowhead=none]
+	n01 [label=Program]
+	n02 [label="VarDeclInit
+N: integer"]
+	n03 [label=100 color=lightyellow]
+	n02 -> n03 [label=init]
+	n01 -> n02
+	n04 [label="VarDecl
+isprime: array[672] boolean"]
+	n01 -> n04
+	n05 [label="FuncDecl
+main()
+→ void"]
+	n06 [label=Body]
+	n05 -> n06
+	n07 [label="VarDecl
+i: integer"]
+	n06 -> n07
+	n08 [label="VarDecl
+j: integer"]
+	n06 -> n08
+	n09 [label=For]
+	n10 [label="=" color=gold shape=circle]
+	n11 [label=i color=lightblue]
+	n10 -> n11 [label=lval]
+	n12 [label=0 color=lightyellow]
+	n10 -> n12 [label=rval]
+	n09 -> n10 [label=init]
+	n13 [label="<=" color=lightcoral shape=circle]
+	n14 [label=i color=lightblue]
+	n13 -> n14
+	n15 [label=N color=lightblue]
+	n13 -> n15
+	n09 -> n13 [label=cond]
+	n16 [label="++" color=lightcoral shape=circle]
+	n17 [label=i color=lightblue]
+	n16 -> n17
+	n09 -> n16 [label=step]
+	n18 [label=Block]
+	n19 [label="=" color=gold shape=circle]
+	n20 [label="[]" color=lightgreen shape=circle]
+	n21 [label=isprime color=lightblue]
+	n20 -> n21 [label=array]
+	n22 [label=int]
+	n20 -> n22 [label=index]
+	n19 -> n20 [label=lval]
+	n23 [label=True color=lightpink]
+	n19 -> n23 [label=rval]
+	n18 -> n19
+	n09 -> n18 [label=body]
+	n06 -> n09
+	n24 [label="=" color=gold shape=circle]
+	n25 [label="[]" color=lightgreen shape=circle]
+	n26 [label=isprime color=lightblue]
+	n25 -> n26 [label=array]
+	n27 [label=int]
+	n25 -> n27 [label=index]
+	n24 -> n25 [label=lval]
+	n28 [label=False color=lightpink]
+	n24 -> n28 [label=rval]
+	n06 -> n24
+	n29 [label="=" color=gold shape=circle]
+	n30 [label="[]" color=lightgreen shape=circle]
+	n31 [label=isprime color=lightblue]
+	n30 -> n31 [label=array]
+	n32 [label=int]
+	n30 -> n32 [label=index]
+	n29 -> n30 [label=lval]
+	n33 [label=False color=lightpink]
+	n29 -> n33 [label=rval]
+	n06 -> n29
+	n34 [label=For]
+	n35 [label="=" color=gold shape=circle]
+	n36 [label=i color=lightblue]
+	n35 -> n36 [label=lval]
+	n37 [label=0 color=lightyellow]
+	n35 -> n37 [label=rval]
+	n34 -> n35 [label=init]
+	n38 [label="<" color=lightcoral shape=circle]
+	n39 [label="*" color=lightcoral shape=circle]
+	n40 [label=i color=lightblue]
+	n39 -> n40
+	n41 [label=i color=lightblue]
+	n39 -> n41
+	n38 -> n39
+	n42 [label=N color=lightblue]
+	n38 -> n42
+	n34 -> n38 [label=cond]
+	n43 [label="++" color=lightcoral shape=circle]
+	n44 [label=i color=lightblue]
+	n43 -> n44
+	n34 -> n43 [label=step]
+	n45 [label=Block]
+	n46 [label=If]
+	n47 [label="[]" color=lightgreen shape=circle]
+	n48 [label=isprime color=lightblue]
+	n47 -> n48 [label=array]
+	n49 [label=int]
+	n47 -> n49 [label=index]
+	n46 -> n47 [label=cond]
+	n50 [label=Block]
+	n51 [label=For]
+	n52 [label="=" color=gold shape=circle]
+	n53 [label=j color=lightblue]
+	n52 -> n53 [label=lval]
+	n54 [label="*" color=lightcoral shape=circle]
+	n55 [label=i color=lightblue]
+	n54 -> n55
+	n56 [label=i color=lightblue]
+	n54 -> n56
+	n52 -> n54 [label=rval]
+	n51 -> n52 [label=init]
+	n57 [label="<" color=lightcoral shape=circle]
+	n58 [label=j color=lightblue]
+	n57 -> n58
+	n59 [label=N color=lightblue]
+	n57 -> n59
+	n51 -> n57 [label=cond]
+	n60 [label="++" color=lightcoral shape=circle]
+	n61 [label=j color=lightblue]
+	n60 -> n61
+	n51 -> n60 [label=step]
+	n62 [label=Block]
+	n63 [label="=" color=gold shape=circle]
+	n64 [label="[]" color=lightgreen shape=circle]
+	n65 [label=isprime color=lightblue]
+	n64 -> n65 [label=array]
+	n66 [label=int]
+	n64 -> n66 [label=index]
+	n63 -> n64 [label=lval]
+	n67 [label=False color=lightpink]
+	n63 -> n67 [label=rval]
+	n62 -> n63
+	n51 -> n62 [label=body]
+	n50 -> n51
+	n46 -> n50 [label=then]
+	n45 -> n46
+	n34 -> n45 [label=body]
+	n06 -> n34
+	n68 [label=For]
+	n69 [label="=" color=gold shape=circle]
+	n70 [label=i color=lightblue]
+	n69 -> n70 [label=lval]
+	n71 [label=0 color=lightyellow]
+	n69 -> n71 [label=rval]
+	n68 -> n69 [label=init]
+	n72 [label="<" color=lightcoral shape=circle]
+	n73 [label=i color=lightblue]
+	n72 -> n73
+	n74 [label=N color=lightblue]
+	n72 -> n74
+	n68 -> n72 [label=cond]
+	n75 [label="++" color=lightcoral shape=circle]
+	n76 [label=i color=lightblue]
+	n75 -> n76
+	n68 -> n75 [label=step]
+	n77 [label=Block]
+	n78 [label=If]
+	n79 [label="[]" color=lightgreen shape=circle]
+	n80 [label=isprime color=lightblue]
+	n79 -> n80 [label=array]
+	n81 [label=int]
+	n79 -> n81 [label=index]
+	n78 -> n79 [label=cond]
+	n82 [label=Block]
+	n83 [label=Print]
+	n84 [label=i color=lightblue]
+	n83 -> n84
+	n82 -> n83
+	n78 -> n82 [label=then]
+	n77 -> n78
+	n68 -> n77 [label=body]
+	n06 -> n68
+	n01 -> n05
+}

@@ -1,0 +1,455 @@
+/* =================================================================== *
+ * test_all_tokens.bminor                                              *
+ * Archivo de prueba exhaustivo para el lexer y parser de B-Minor      *
+ * Prueba todos los tokens, palabras reservadas y construcciones       *
+ * =================================================================== */
+
+// ===================================================================
+// 1. PRUEBA DE PALABRAS RESERVADAS Y TIPOS SIMPLES
+// ===================================================================
+
+// Variables de tipos simples
+x: integer = 42;
+y: float = 3.14159;
+z: boolean = true;
+w: boolean = false;
+c: char = 'A';
+s: string = "Hello, World!";
+v: void;
+
+// ===================================================================
+// 2. PRUEBA DE LITERALES NUMÉRICOS
+// ===================================================================
+
+// Enteros
+zero: integer = 0;
+positive: integer = 123456789;
+large_int: integer = 999999999;
+
+// Flotantes con punto decimal
+pi: float = 3.14159;
+small_float: float = 0.001;
+large_float: float = 123456.789;
+
+// Flotantes con notación científica
+sci1: float = 1.5e10;
+sci2: float = 2.0e-5;
+sci3: float = 3e8;
+sci4: float = 4E+12;
+
+// ===================================================================
+// 3. PRUEBA DE LITERALES DE CARACTERES
+// ===================================================================
+
+char_simple: char = 'x';
+char_space: char = ' ';
+char_newline: char = '\n';
+char_tab: char = '\t';
+char_quote: char = '\'';
+char_backslash: char = '\\';
+char_null: char = '\0';
+
+// ===================================================================
+// 4. PRUEBA DE LITERALES DE CADENA
+// ===================================================================
+
+string_empty: string = "";
+string_simple: string = "Hello";
+string_spaces: string = "Hello World";
+string_escape: string = "Line1\nLine2\tTabbed";
+string_quotes: string = "She said \"Hello\"";
+string_long: string = "This is a longer string to test the parser with multiple words and punctuation!";
+
+// ===================================================================
+// 5. PRUEBA DE ARRAYS
+// ===================================================================
+
+// Arrays sin tamaño (parámetros)
+// arr_param: array [] integer;
+
+// Arrays con tamaño
+arr1: array [10] integer;
+arr2: array [5] float = {1.0, 2.0, 3.0, 4.0, 5.0};
+arr3: array [3] boolean = {true, false, true};
+arr4: array [4] char = {'a', 'b', 'c', 'd'};
+
+// Arrays multidimensionales
+matrix: array [3] array [4] integer;
+cube: array [2] array [3] array [4] float;
+
+// ===================================================================
+// 6. PRUEBA DE OPERADORES ARITMÉTICOS
+// ===================================================================
+
+test_arithmetic: function integer () = {
+    a: integer = 10;
+    b: integer = 3;
+    
+    sum: integer = a + b;           // Suma
+    diff: integer = a - b;          // Resta
+    prod: integer = a * b;          // Multiplicación
+    quot: integer = a / b;          // División
+    mod: integer = a % b;           // Módulo
+    power: integer = a ^ b;         // Potencia
+    
+    neg: integer = -a;              // Negación unaria
+    
+    return sum + diff + prod + quot + mod + power;
+}
+
+// ===================================================================
+// 7. PRUEBA DE OPERADORES DE COMPARACIÓN
+// ===================================================================
+
+test_comparison: function boolean (x: integer, y: integer) = {
+    lt: boolean = x < y;            // Menor que
+    le: boolean = x <= y;           // Menor o igual
+    gt: boolean = x > y;            // Mayor que
+    ge: boolean = x >= y;           // Mayor o igual
+    eq: boolean = x == y;           // Igual
+    ne: boolean = x != y;           // Diferente
+    
+    return lt && le && gt && ge && eq && ne;
+}
+
+// ===================================================================
+// 8. PRUEBA DE OPERADORES LÓGICOS
+// ===================================================================
+
+test_logical: function boolean (a: boolean, b: boolean) = {
+    and_result: boolean = a && b;   // AND lógico
+    or_result: boolean = a || b;    // OR lógico
+    not_a: boolean = !a;            // NOT lógico
+    not_b: boolean = !b;
+    
+    return and_result || or_result || not_a || not_b;
+}
+
+// ===================================================================
+// 9. PRUEBA DE OPERADORES DE INCREMENTO/DECREMENTO
+// ===================================================================
+
+test_inc_dec: function integer () = {
+    counter: integer = 0;
+    
+    counter++;                      // Incremento postfijo
+    counter++;
+    counter--;                      // Decremento postfijo
+    
+    return counter;
+}
+
+// ===================================================================
+// 10. PRUEBA DE SENTENCIAS IF/ELSE
+// ===================================================================
+
+test_if_else: function integer (n: integer) = {
+    result: integer = 0;
+    
+    if (n > 0) {
+        result = 1;
+    } else {
+        result = -1;
+    }
+    
+    // IF anidado
+    if (n > 100) {
+        if (n > 1000) {
+            result = 3;
+        } else {
+            result = 2;
+        }
+    }
+    
+    // IF sin else
+    if (n == 0) {
+        result = 0;
+    }
+    
+    return result;
+}
+
+// ===================================================================
+// 11. PRUEBA DE BUCLES FOR
+// ===================================================================
+
+test_for_loop: function integer () = {
+    sum: integer = 0;
+    i: integer;
+    j: integer;
+    
+    // FOR simple
+    for (i = 0; i < 10; i++) {
+        sum = sum + i;
+    }
+    
+    // FOR anidado
+    for (i = 0; i < 5; i++) {
+        for (j = 0; j < 5; j++) {
+            sum = sum + 1;
+        }
+    }
+    
+    // FOR con expresiones complejas
+    for (i = 0; i < 100; i = i + 2) {
+        sum = sum + i;
+    }
+    
+    return sum;
+}
+
+// ===================================================================
+// 12. PRUEBA DE BUCLES WHILE
+// ===================================================================
+
+test_while_loop: function integer () = {
+    count: integer = 0;
+    total: integer = 0;
+    
+    // WHILE simple
+    while (count < 10) {
+        total = total + count;
+        count++;
+    }
+    
+    // WHILE anidado
+    count = 0;
+    while (count < 5) {
+        i: integer = 0;
+        while (i < 3) {
+            total = total + 1;
+            i++;
+        }
+        count++;
+    }
+    
+    return total;
+}
+
+// ===================================================================
+// 13. PRUEBA DE ACCESO A ARRAYS
+// ===================================================================
+
+test_array_access: function integer () = {
+    numbers: array [5] integer = {10, 20, 30, 40, 50};
+    idx: integer = 2;
+    value: integer;
+    
+    // Acceso con índice constante
+    value = numbers[0];
+    value = numbers[4];
+    
+    // Acceso con variable
+    value = numbers[idx];
+    
+    // Asignación a array
+    numbers[0] = 100;
+    numbers[idx] = 200;
+    
+    return value;
+}
+
+// ===================================================================
+// 14. PRUEBA DE FUNCIONES Y LLAMADAS
+// ===================================================================
+
+// Función sin parámetros
+simple_func: function integer () = {
+    return 42;
+}
+
+// Función con múltiples parámetros
+add: function integer (a: integer, b: integer) = {
+    return a + b;
+}
+
+// Función con diferentes tipos de parámetros
+mixed_params: function float (x: integer, y: float, flag: boolean) = {
+    result: float = 0.0;
+    
+    if (flag) {
+        result = y + 1.0;
+    } else {
+        result = y - 1.0;
+    }
+    
+    return result;
+}
+
+// Función que recibe arrays
+sum_array: function integer (arr: array [] integer, size: integer) = {
+    total: integer = 0;
+    i: integer;
+    
+    for (i = 0; i < size; i++) {
+        total = total + arr[i];
+    }
+    
+    return total;
+}
+
+// Función recursiva
+factorial: function integer (n: integer) = {
+    if (n <= 1) {
+        return 1;
+    } else {
+        return n * factorial(n - 1);
+    }
+}
+
+// ===================================================================
+// 15. PRUEBA DE SENTENCIA PRINT
+// ===================================================================
+
+test_print: function integer () = {
+    print "Testing print statement\n";
+    print "Integer: ", 42, "\n";
+    print "Float: ", 3.14, "\n";
+    print "Boolean: ", true, "\n";
+    print "Char: ", 'X', "\n";
+    
+    x: integer = 100;
+    print "Variable: ", x, "\n";
+    
+    return 0;
+}
+
+// ===================================================================
+// 16. PRUEBA DE EXPRESIONES COMPLEJAS
+// ===================================================================
+
+test_complex_expr: function integer () = {
+    a: integer = 5;
+    b: integer = 10;
+    c: integer = 15;
+    
+    // Expresión aritmética compleja
+    result1: integer = (a + b) * c - a / b + c % a;
+    
+    // Expresión con potencia
+    result2: integer = a ^ 2 + b ^ 2;
+    
+    // Expresión booleana compleja
+    flag: boolean = (a < b) && (b < c) || (a == 5);
+    
+    // Expresión con negación
+    result3: integer = -(a + b) * c;
+    
+    // Expresión con llamadas a función
+    result4: integer = add(a, b) + add(c, result1);
+    
+    return result1 + result2 + result3 + result4;
+}
+
+// ===================================================================
+// 17. PRUEBA DE AUTO (si está implementado)
+// ===================================================================
+
+test_auto: function integer () = {
+    auto x = 42;
+    auto y = 3.14;
+    auto flag = true;
+    auto ch = 'A';
+    
+    return x;
+}
+
+// ===================================================================
+// 18. PRUEBA DE BLOQUES Y SCOPE
+// ===================================================================
+
+test_blocks: function integer () = {
+    outer: integer = 1;
+    
+    {
+        inner: integer = 2;
+        {
+            deep: integer = 3;
+            outer = outer + inner + deep;
+        }
+    }
+    
+    return outer;
+}
+
+// ===================================================================
+// 19. PRUEBA DE ASIGNACIONES COMPLEJAS
+// ===================================================================
+
+test_assignments: function integer () = {
+    x: integer;
+    y: integer;
+    z: integer;
+    arr: array [3] integer;
+    
+    // Asignaciones simples
+    x = 10;
+    y = x;
+    z = x + y;
+    
+    // Asignaciones a arrays
+    arr[0] = x;
+    arr[1] = y;
+    arr[2] = z;
+    
+    // Asignación en expresión
+    z = (x = 5) + 10;
+    
+    return z;
+}
+
+// ===================================================================
+// 20. FUNCIÓN MAIN
+// ===================================================================
+
+main: function integer () = {
+    print "===========================================\n";
+    print "B-Minor Comprehensive Test Suite\n";
+    print "===========================================\n\n";
+    
+    // Llamar a todas las funciones de prueba
+    print "Testing arithmetic operations...\n";
+    result1: integer = test_arithmetic();
+    
+    print "Testing comparison operators...\n";
+    flag1: boolean = test_comparison(5, 10);
+    
+    print "Testing logical operators...\n";
+    flag2: boolean = test_logical(true, false);
+    
+    print "Testing increment/decrement...\n";
+    result2: integer = test_inc_dec();
+    
+    print "Testing if/else statements...\n";
+    result3: integer = test_if_else(50);
+    
+    print "Testing for loops...\n";
+    result4: integer = test_for_loop();
+    
+    print "Testing while loops...\n";
+    result5: integer = test_while_loop();
+    
+    print "Testing array access...\n";
+    result6: integer = test_array_access();
+    
+    print "Testing function calls...\n";
+    result7: integer = factorial(5);
+    
+    print "Testing print statements...\n";
+    test_print();
+    
+    print "Testing complex expressions...\n";
+    result8: integer = test_complex_expr();
+    
+    print "Testing blocks and scope...\n";
+    result9: integer = test_blocks();
+    
+    print "Testing assignments...\n";
+    result10: integer = test_assignments();
+    
+    print "\n===========================================\n";
+    print "All tests completed!\n";
+    print "===========================================\n";
+    
+    return 0;
+}

@@ -1,301 +1,358 @@
 from dataclasses import dataclass, field
-from multimethod import multimeta
-from typing import List, Union, Optional
-from graphviz import Digraph
+from multimethod import multimeta, multimethod
+from typing      import List, Union
 
 # =====================================================================
-# Visitor base
+# Clases Abstractas
 # =====================================================================
 class Visitor(metaclass=multimeta):
-    def visit(self, node, *args, **kwargs):
-        method = "visit_" + node.__class__.__name__
-        visitor = getattr(self, method, self.generic_visit)
-        return visitor(node, *args, **kwargs)
-
-    def generic_visit(self, node, *args, **kwargs):
-        raise NotImplementedError(f"No visit_{node.__class__.__name__} method")
-
+    pass
 
 @dataclass
 class Node:
     def accept(self, v: Visitor, *args, **kwargs):
         return v.visit(self, *args, **kwargs)
 
-    def pretty(self, level: int = 0) -> str:
-        return " " * level + repr(self)
-
-
-# =====================================================================
-# ASTPrinter usando el Visitor
-# =====================================================================
-class ASTPrinter(Visitor):
-    node_defaults = {
-        "shape": "box",
-        "color": "deepskyblue",
-        "style": "filled",
-    }
-    edge_defaults = {
-        "arrowhead": "none",
-    }
-
-    def __init__(self):
-        self.dot = Digraph("AST")
-        self.dot.attr("node", **self.node_defaults)
-        self.dot.attr("edge", **self.edge_defaults)
-        self._seq = 0
-
-    @property
-    def name(self):
-        self._seq += 1
-        return f"n{self._seq:02d}"
-
-    @classmethod
-    def render(cls, n: Node):
-        dot = cls()
-        n.accept(dot)
-        return dot.dot
-
-    # ---- Visitors ----
-    def visit_Program(self, n: "Program"):
-        name = self.name
-        self.dot.node(name, label="Program")
-        for stmt in n.body:
-            self.dot.edge(name, stmt.accept(self))
-        return name
-
-    def visit_Decl(self, n: "Decl"):
-        name = self.name
-        self.dot.node(name, label=f"Decl\n{n.name}:{n.type.pretty()}")
-        if n.value:
-            self.dot.edge(name, n.value.accept(self))
-        return name
-
-    def visit_BinOper(self, n: "BinOper"):
-        name = self.name
-        self.dot.node(name, label=f"{n.oper}", shape="circle")
-        self.dot.edge(name, n.left.accept(self))
-        self.dot.edge(name, n.right.accept(self))
-        return name
-
-    def visit_UnaryOper(self, n: "UnaryOper"):
-        name = self.name
-        self.dot.node(name, label=f"{n.oper}", shape="circle")
-        self.dot.edge(name, n.expr.accept(self))
-        return name
-
-    def visit_Literal(self, n: "Literal"):
-        name = self.name
-        self.dot.node(name, label=f"{n.value}:{n.type}")
-        return name
-
-    # ---- Nodos concretos ----
-    def visit_Integer(self, n: "Integer"):
-        name = self.name
-        self.dot.node(name, f"Integer({n.value})")
-        return name
-
-    def visit_Float(self, n: "Float"):
-        name = self.name
-        self.dot.node(name, f"Float({n.value})")
-        return name
-
-    def visit_Boolean(self, n: "Boolean"):
-        name = self.name
-        self.dot.node(name, f"Boolean({n.value})")
-        return name
-
-    def visit_Char(self, n: "Char"):
-        name = self.name
-        self.dot.node(name, f"Char({n.value})")
-        return name
-
-    def visit_String(self, n: "String"):
-        name = self.name
-        self.dot.node(name, f"String({n.value})")
-        return name
-
-    def visit_Type(self, n: "Type"):
-        name = self.name
-        self.dot.node(name, f"Type({n.name})")
-        return name
-
-    def visit_Var(self, n: "Var"):
-        name = self.name
-        self.dot.node(name, f"Var({n.name})")
-        return name
-
-    def visit_ArrayAccess(self, n: "ArrayAccess"):
-        name = self.name
-        self.dot.node(name, "ArrayAccess")
-        self.dot.edge(name, n.array.accept(self))
-        self.dot.edge(name, n.index.accept(self))
-        return name
-
-
-# =====================================================================
-# Clases base de AST
-# =====================================================================
 @dataclass
 class Statement(Node):
-    def pretty(self, level: int = 0) -> str:
-        return " " * level + f"Statement()"
-
+    pass
 
 @dataclass
 class Expression(Node):
-    def pretty(self, level: int = 0) -> str:
-        return " " * level + f"Expression()"
-
+    pass
 
 # =====================================================================
-# Definiciones de alto nivel
+# Definiciones
 # =====================================================================
 @dataclass
 class Program(Statement):
     body: List[Statement] = field(default_factory=list)
 
-    def pretty(self, level=0):
-        return "Program:\n" + "\n".join(stmt.pretty(level + 2) for stmt in self.body)
-
-
 @dataclass
 class Declaration(Statement):
-    def pretty(self, level=0):
-        return " " * level + f"Declaration()"
-
+    pass
 
 @dataclass
-class Decl(Declaration):
-    name: str
-    type: Expression
-    value: Optional[Expression] = None
-
-    def pretty(self, level=0):
-        return (
-            " " * level
-            + f"Decl(name={self.name}, type={self.type.pretty()}, value={self.value.pretty() if self.value else None})"
-        )
+class VarDecl(Declaration):
+    name : str
+    type : Expression
+    value: Expression = None
 
 
-# =====================================================================
-# Tipos
-# =====================================================================
-@dataclass
-class Type(Expression):
-    name: str
+class WhileStmt(Statement):
+    def __init__(self, cond, body):
+        self.cond = cond
+        self.body = body
 
-    def pretty(self, level=0):
-        return " " * level + f"Type({self.name})"
+    def pretty(self, tree=None):
+        branch = tree.add("While")
+        self.cond.pretty(branch.add("Cond"))
+        self.body.pretty(branch.add("Body"))
+        return tree
+
+class DoWhileStmt(Statement):
+    def __init__(self, body, cond):
+        self.body = body
+        self.cond = cond
+
+    def pretty(self, tree=None):
+        branch = tree.add("DoWhile")
+        self.body.pretty(branch.add("Body"))
+        self.cond.pretty(branch.add("Cond"))
+        return tree
+
+class IfStmt(Node):
+    def __init__(self, cond, then_branch, else_branch=None):
+        self.cond = cond
+        self.then_branch = then_branch
+        self.else_branch = else_branch
+
+    def pretty(self, tree=None):
+        branch = tree.add("IfStmt")
+        if hasattr(self.cond, "pretty"):
+            self.cond.pretty(branch)
+        else:
+            branch.add(f"Cond: {self.cond}")
+
+        branch_then = branch.add("Then")
+        if hasattr(self.then_branch, "pretty"):
+            self.then_branch.pretty(branch_then)
+        else:
+            branch_then.add(str(self.then_branch))
+
+        if self.else_branch:
+            branch_else = branch.add("Else")
+            if hasattr(self.else_branch, "pretty"):
+                self.else_branch.pretty(branch_else)
+            else:
+                branch_else.add(str(self.else_branch))
+        return tree
+
+class IfCond(Node):
+    def __init__(self, cond):
+        self.cond = cond
+
+    def pretty(self, tree=None):
+        branch = tree.add("IfCond")
+        if self.cond:
+            self.cond.pretty(branch.add("Cond"))
+        else:
+            branch.add("Cond: <empty>")
+        return tree
+
+class PreInc(Expression):
+    def __init__(self, expr):
+        self.expr = expr
+
+    def pretty(self, tree=None):
+        branch = tree.add("PreInc")
+        self.expr.pretty(branch)
+        return tree
+
+class FuncDecl(Node):
+    def __init__(self, name, type_func, body=None):
+        self.name = name
+        self.type_func = type_func
+        self.body = body
+
+    def pretty(self, tree):
+        branch = tree.add(f"FuncDecl {self.name}: {self.ret_type}")
+        params_branch = branch.add("Params")
+        for p in self.params:
+            p.pretty(params_branch)
+        body_branch = branch.add("Body")
+        for stmt in self.body:
+            stmt.pretty(body_branch)
+
+class Identifier(Node):
+    def __init__(self, name):
+        self.name = name
+
+    def pretty(self, tree):
+        tree.add(f"ID {self.name}")
+
+class Block(Node):
+    def __init__(self, body):
+        self.body = body
+
+    def pretty(self, tree):
+        tree.add("Body")
+
+class PreDec(Expression):
+    def __init__(self, expr):
+        self.expr = expr
+
+    def pretty(self, tree=None):
+        branch = tree.add("PreDec")
+        self.expr.pretty(branch)
+        return tree
+
+class SimpleType(Node):
+    def __init__(self, name):
+        self.name = name
+
+    def pretty(self, tree):
+        tree.add(f"Type {self.name}")
 
 
-@dataclass
-class ArrayType(Expression):
-    size: Optional[Expression]
-    base: Expression
+class ArrayType(Node):
+    def __init__(self, size, elem_type):
+        self.size = size      # None si es []
+        self.elem_type = elem_type
 
-    def pretty(self, level=0):
-        return " " * level + f"ArrayType(size={self.size.pretty() if self.size else None}, base={self.base.pretty()})"
-
-
-@dataclass
-class FuncType(Expression):
-    return_type: Expression
-    params: List["Param"] = field(default_factory=list)
-
-    def pretty(self, level=0):
-        params_str = ", ".join(p.pretty() for p in self.params)
-        return " " * level + f"FuncType(return={self.return_type.pretty()}, params=[{params_str}])"
+    def pretty(self, tree):
+        branch = tree.add("ArrayType")
+        if self.size:
+            self.size.pretty(branch.add("Size"))
+        self.elem_type.pretty(branch.add("ElementType"))
 
 
-# =====================================================================
-# Literales
-# =====================================================================
-@dataclass
-class Literal(Expression):
-    value: Union[int, float, str, bool]
-    type: str = None
+class FuncType(Node):
+    def __init__(self, ret_type, params):
+        self.ret_type = ret_type
+        self.params = params
 
-    def pretty(self, level=0):
-        return " " * level + f"{self.type.capitalize()}({self.value})"
-
-
-@dataclass
-class Integer(Literal):
-    value: int
-    def __post_init__(self):
-        assert isinstance(self.value, int)
-        self.type = "integer"
+    def pretty(self, tree):
+        branch = tree.add("FuncType")
+        self.ret_type.pretty(branch.add("ReturnType"))
+        params_branch = branch.add("Params")
+        for p in self.params:
+            p.pretty(params_branch)
 
 
-@dataclass
-class Float(Literal):
-    value: float
-    def __post_init__(self):
-        assert isinstance(self.value, float)
-        self.type = "float"
+class Param(Node):
+    def __init__(self, name, typ):
+        self.name = name
+        self.typ = typ
 
+    def pretty(self, tree):
+        branch = tree.add(f"Param {self.name}")
+        self.typ.pretty(branch.add("Type"))
 
-@dataclass
-class Boolean(Literal):
-    value: bool
-    def __post_init__(self):
-        assert isinstance(self.value, bool)
-        self.type = "boolean"
+class VarDeclInit(Node):
+    def __init__(self, name, typ, init):
+        self.name = name
+        self.typ = typ
+        self.init = init
 
+    def pretty(self, tree):
+        branch = tree.add(f"VarDeclInit {self.name}")
+        self.typ.pretty(branch.add("Type"))
+        if isinstance(self.init, list):
+            init_branch = branch.add("InitList")
+            for e in self.init:
+                e.pretty(init_branch)
+        else:
+            self.init.pretty(branch.add("Init"))
 
-@dataclass
-class Char(Literal):
-    value: str
-    def __post_init__(self):
-        assert isinstance(self.value, str) and len(self.value) == 1
-        self.type = "char"
+class ReturnStmt(Node):
+    def __init__(self, expr):
+        self.expr = expr
 
+    def pretty(self, tree):
+        branch = tree.add("Return")
+        if self.expr: self.expr.pretty(branch)
+            
+'''
+Statement
+  |
+  +-- Declaration (abstract)
+  | |
+  | +-- VarDecl: Guardar la información de una declaración de variable
+  | |
+  | +-- ArrayDecl: Declaración de Arreglos (multi-dimencioanles)
+  | |
+  | +-- FuncDecl: Para guardar información sobre las funciones declaradas
 
-@dataclass
-class String(Literal):
-    value: str
-    def __post_init__(self):
-        assert isinstance(self.value, str)
-        self.type = "string"
+    -- VarParm
+    -- ArrayParm
 
-
-# =====================================================================
-# Variables y expresiones
-# =====================================================================
-@dataclass
-class Var(Expression):
-    name: str
-
-    def pretty(self, level=0):
-        return " " * level + f"Var({self.name})"
-
-
-@dataclass
-class ArrayAccess(Expression):
-    array: Expression
-    index: Expression
-
-    def pretty(self, level=0):
-        return " " * level + f"ArrayAccess(array={self.array.pretty()}, index={self.index.pretty()})"
-
+  -- IfStmt
+  -- ReturnStmt
+  |
+  +-- PrintStmt
+  |
+  +-- ForStmt
+  |
+  +-- WhileStmt
+  |
+  +-- DoWhileStmt
+  |
+  +-- Assignment
+'''
+# Expresiones
 
 @dataclass
 class BinOper(Expression):
-    oper: str
-    left: Expression
+    oper : str
+    left : Expression
     right: Expression
-
-    def pretty(self, level=0):
-        return (
-            " " * level
-            + f"BinOper({self.oper}, {self.left.pretty()}, {self.right.pretty()})"
-        )
-
 
 @dataclass
 class UnaryOper(Expression):
-    oper: str
-    expr: Expression
+    oper : str
+    expr : Expression
 
-    def pretty(self, level=0):
-        return " " * level + f"UnaryOper({self.oper}, {self.expr.pretty()})"
+@dataclass
+class Literal(Expression):
+    value : Union[int, float, str, bool]
+    type  : str = None
+
+@dataclass
+class Integer(Literal):
+    value : int
+
+    def __post_init__(self):
+        assert isinstance(self.value, int), "Value debe ser un 'integer'"
+        self.type = 'integer'
+
+@dataclass
+class Float(Literal):
+    value : float
+
+    def __post_init__(self):
+        assert isinstance(self.value, float), "Value debe ser un 'float'"
+        self.type = 'float'
+
+@dataclass
+class Boolean(Literal):
+    value : bool
+
+    def __post_init__(self):
+        assert isinstance(self.value, bool), "Value debe ser un 'boolean'"
+        self.type = 'boolean'
+
+
+class Assign(Node):
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+    def pretty(self, tree):
+        branch = tree.add("Assign")
+        self.left.pretty(branch.add("Left"))
+        self.right.pretty(branch.add("Right"))
+
+class Call(Node):
+    def __init__(self, func, args):
+        self.func = func
+        self.args = args
+    def pretty(self, tree):
+        branch = tree.add("Call")
+        self.func.pretty(branch.add("Func"))
+        for a in self.args:
+            a.pretty(branch.add("Arg"))
+
+class ArrayAccess(Node):
+    def __init__(self, array, index):
+        self.array = array
+        self.index = index
+    def pretty(self, tree):
+        branch = tree.add("ArrayAccess")
+        self.array.pretty(branch.add("Array"))
+        self.index.pretty(branch.add("Index"))
+
+class Char(Node):
+    def __init__(self, value):
+        self.value = value
+    def pretty(self, tree):
+        tree.add(f"Char {self.value}")
+
+class String(Node):
+    def __init__(self, value):
+        self.value = value
+    def pretty(self, tree):
+        tree.add(f"String {self.value}")
+
+
+class ForStmt(Node):
+    def __init__(self, init, cond, step, body):
+        self.init = init
+        self.cond = cond
+        self.step = step
+        self.body = body
+
+    def pretty(self, tree):
+        branch = tree.add("For")
+        if self.init: self.init.pretty(branch.add("Init"))
+        if self.cond: self.cond.pretty(branch.add("Cond"))
+        if self.step: self.step.pretty(branch.add("Step"))
+        self.body.pretty(branch.add("Body"))
+
+
+@dataclass
+class PrintStmt(Statement):
+    expr: Expression
+            
+
+'''
+  - Char
+  - String
+  - Increment (pre/post fijo)
+  - Decrement
+  - FuncCall
+
+  +-- Location ('load'/'store')
+    -- VarLoc
+    -- ArrayLoc
+
+'''
