@@ -1,0 +1,24 @@
+digraph AST {
+	node [color=deepskyblue shape=box style=filled]
+	edge [arrowhead=none]
+	n01 [label=Program]
+	n02 [label="VarDeclInit
+i: integer"]
+	n03 [label=0 color=lightyellow]
+	n02 -> n03 [label=init]
+	n01 -> n02
+	n04 [label=DoWhile]
+	n05 [label=Block]
+	n06 [label="++" color=lightcoral shape=circle]
+	n07 [label=i color=lightblue]
+	n06 -> n07
+	n05 -> n06
+	n04 -> n05 [label=body]
+	n08 [label="<" color=lightcoral shape=circle]
+	n09 [label=i color=lightblue]
+	n08 -> n09
+	n10 [label=5 color=lightyellow]
+	n08 -> n10
+	n04 -> n08 [label=cond]
+	n01 -> n04
+}

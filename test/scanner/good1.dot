@@ -1,0 +1,10 @@
+digraph AST {
+	node [color=deepskyblue shape=box style=filled]
+	edge [arrowhead=none]
+	n01 [label=Program]
+	n02 [label="VarDeclInit
+y: float"]
+	n03 [label=3.14 color=lightyellow]
+	n02 -> n03 [label=init]
+	n01 -> n02
+}

@@ -14,6 +14,9 @@ import sys
 class BMinorParser(Parser):
     # Obtener los tokens del lexer
     tokens = BMinorLexer.tokens
+
+    # Generar archivo de debug para ver conflictos
+    debugfile = 'parser.out'
     
     # Definir precedencia y asociatividad de operadores
     precedence = (
