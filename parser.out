@@ -111,6 +111,10 @@ Rule 107   param -> ID : type_array
 Rule 108   param -> ID : type_simple
 Rule 109   empty -> <empty>
 
+Unused terminals:
+
+    AUTO
+
 Terminals, with rules where they appear:
 
 %                    : 67
@@ -127,6 +131,7 @@ Terminals, with rules where they appear:
 =                    : 8 9 10 49
 >                    : 58
 ARRAY                : 96 97 98 99
+AUTO                 : 
 BOOLEAN              : 93
 CHAR                 : 92
 CHAR_LIT             : 86
