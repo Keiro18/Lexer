@@ -1,0 +1,102 @@
+// test_errors.bminor
+// Ejemplos de errores semánticos que el checker debe detectar
+
+// ERROR: Variable duplicada
+x: integer;
+x: float;  // Error: 'x' ya fue declarada
+
+// ERROR: Tipo incompatible en inicialización
+y: integer = 3.14;  // Error: tipo float asignado a integer
+
+// ERROR: Función con tipo de retorno incorrecto
+func1: function integer() = {
+    return 3.14;  // Error: retorna float en función integer
+}
+
+// ERROR: Función sin return cuando se requiere
+func2: function integer() = {
+    x: integer = 5;
+    // Error: falta return
+}
+
+// ERROR: Return fuera de función
+// return 42;  // Error: return fuera de función
+
+// ERROR: Operación entre tipos incompatibles
+test1: function void() = {
+    a: integer = 10;
+    b: string = "hola";
+    c: integer;
+    c = a + b;  // Error: no se puede sumar integer + string
+}
+
+// ERROR: Condición no booleana
+test2: function void() = {
+    x: integer = 5;
+    if (x) {  // Error: condición debe ser booleana
+        print "test";
+    }
+}
+
+// ERROR: Variable no definida
+test3: function void() = {
+    print z;  // Error: 'z' no está definida
+}
+
+// ERROR: Llamada a función con argumentos incorrectos
+suma: function integer(a: integer, b: integer) = {
+    return a + b;
+}
+
+test4: function void() = {
+    x: integer;
+    x = suma(5);  // Error: falta un argumento
+    x = suma(5, 3.14);  // Error: segundo argumento debe ser integer
+}
+
+// ERROR: Índice no entero en array
+test5: function void() = {
+    arr: array[10] integer;
+    idx: float = 2.5;
+    x: integer;
+    x = arr[idx];  // Error: índice debe ser integer
+}
+
+// ERROR: Operador no válido para el tipo
+test6: function void() = {
+    s1: string = "hola";
+    s2: string = "mundo";
+    s3: string;
+    s3 = s1 - s2;  // Error: no se puede restar strings
+}
+
+// ERROR: Comparación de tipos incompatibles
+test7: function void() = {
+    x: integer = 5;
+    s: string = "5";
+    result: boolean;
+    result = (x == s);  // Error: comparando integer con string
+}
+
+// ERROR: Operador unario inválido
+test8: function void() = {
+    s: string = "test";
+    s = !s;  // Error: operador ! no válido para string
+}
+
+// ERROR: Llamada a no-función
+test9: function void() = {
+    x: integer = 5;
+    y: integer;
+    y = x(10);  // Error: 'x' no es una función
+}
+
+// ERROR: Parámetro duplicado
+func3: function integer(x: integer, x: float) = {  // Error: parámetro 'x' duplicado
+    return x;
+}
+
+// ERROR: Asignación a constante/literal
+test10: function void() = {
+    5 = 10;  // Error: no se puede asignar a un literal
+}

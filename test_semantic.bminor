@@ -1,0 +1,106 @@
+// test_semantic.bminor
+// Archivo de prueba para el analizador semántico
+
+// Variables globales
+x: integer;
+y: float = 3.14;
+nombre: string = "B-Minor";
+activo: boolean = true;
+
+// Array con tamaño
+numeros: array[10] integer;
+matriz: array[5] array[5] integer;
+
+// Declaración de función
+factorial: function integer(n: integer);
+
+// Definición de función con cuerpo
+factorial: function integer(n: integer) = {
+    if (n <= 1) {
+        return 1;
+    } else {
+        return n * factorial(n - 1);
+    }
+}
+
+// Función con parámetros múltiples
+suma: function integer(a: integer, b: integer) = {
+    resultado: integer;
+    resultado = a + b;
+    return resultado;
+}
+
+// Función con for loop
+sumarArray: function integer(arr: array[] integer, tam: integer) = {
+    total: integer = 0;
+    i: integer;
+    
+    for(i = 0; i < tam; i++) {
+        total = total + arr[i];
+    }
+    
+    return total;
+}
+
+// Función con while
+contarHasta: function void(n: integer) = {
+    i: integer = 0;
+    
+    while(i < n) {
+        print i;
+        i++;
+    }
+}
+
+// Función con do-while
+imprimirNumeros: function void(inicio: integer, fin: integer) = {
+    i: integer = inicio;
+    
+    do {
+        print i;
+        i++;
+    } while(i <= fin);
+}
+
+// Función principal
+main: function integer() = {
+    // Variables locales
+    num: integer = 5;
+    resultado: integer;
+    flotante: float = 2.5;
+    
+    // Llamadas a funciones
+    resultado = factorial(num);
+    print "Factorial de ", num, " es: ", resultado;
+    
+    // Operaciones aritméticas
+    a: integer = 10;
+    b: integer = 20;
+    c: integer;
+    c = suma(a, b);
+    
+    // Operaciones lógicas
+    verdadero: boolean = true;
+    falso: boolean = false;
+    test: boolean;
+    test = verdadero && !falso;
+    
+    // Operaciones de comparación
+    if (a < b) {
+        print "a es menor que b";
+    } else {
+        print "a no es menor que b";
+    }
+    
+    // Array
+    arr: array[5] integer = {1, 2, 3, 4, 5};
+    arr[0] = 10;
+    print arr[0];
+    
+    // Incremento y decremento
+    contador: integer = 0;
+    contador++;
+    contador--;
+    
+    return 0;
+}
