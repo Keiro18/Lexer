@@ -5,11 +5,13 @@
 
 from sly import Parser
 from bminor_lexer import BMinorLexer
+
 try:
     from bminor_ast import *
 except ImportError:
     from model import *
 import sys
+
 
 class BMinorParser(Parser):
     # Obtener los tokens del lexer
@@ -17,7 +19,7 @@ class BMinorParser(Parser):
 
     # Generar archivo de debug para ver conflictos
     debugfile = 'parser.out'
-    
+
     # Definir precedencia y asociatividad de operadores
     precedence = (
         ('right', '='),
@@ -180,13 +182,13 @@ class BMinorParser(Parser):
     # -------------------
     @_('for_header open_stmt')
     def for_stmt_open(self, p):
-        return ForStmt(init=p.for_header[0], cond=p.for_header[1], 
-                      step=p.for_header[2], body=p.open_stmt)
+        return ForStmt(init=p.for_header[0], cond=p.for_header[1],
+                       step=p.for_header[2], body=p.open_stmt)
 
     @_('for_header closed_stmt')
     def for_stmt_closed(self, p):
-        return ForStmt(init=p.for_header[0], cond=p.for_header[1], 
-                      step=p.for_header[2], body=p.closed_stmt)
+        return ForStmt(init=p.for_header[0], cond=p.for_header[1],
+                       step=p.for_header[2], body=p.closed_stmt)
 
     # -------------------
     # Sentencias simples
@@ -210,7 +212,7 @@ class BMinorParser(Parser):
     @_('expr ";"')
     def simple_stmt(self, p):
         return p.expr
-    
+
     # -------------------
     # Sentencia WHILE
     # -------------------
@@ -232,7 +234,6 @@ class BMinorParser(Parser):
     @_('dowhile_stmt')
     def simple_stmt(self, p):
         return p.dowhile_stmt
-
 
     # -------------------
     # Sentencia PRINT
@@ -310,9 +311,9 @@ class BMinorParser(Parser):
     def lval(self, p):
         return Identifier(name=p.ID)
 
-    @_('ID index')
+    @_('ID array_index')
     def lval(self, p):
-        return ArrayAccess(array=Identifier(name=p.ID), index=p.index)
+        return ArrayAccess(array=Identifier(name=p.ID), index=p.array_index)
 
     # -------------------
     # Expresión nivel 2 (OR lógico)
@@ -453,20 +454,44 @@ class BMinorParser(Parser):
     def group(self, p):
         return Call(func=Identifier(name=p.ID), args=p.opt_expr_list)
 
-    @_('ID index')
+    @_('ID array_index')
     def group(self, p):
-        return ArrayAccess(array=Identifier(name=p.ID), index=p.index)
+        return ArrayAccess(array=Identifier(name=p.ID), index=p.array_index)
 
     @_('factor')
     def group(self, p):
         return p.factor
 
     # -------------------
-    # Índice de array
+    # Índice de array (SEPARADO para evitar conflictos)
     # -------------------
     @_('"[" expr "]"')
-    def index(self, p):
+    def array_index(self, p):
         return p.expr
+
+    # -------------------
+    # Índice para declaración de tipos (usa array_size_expr)
+    # -------------------
+    @_('"[" array_size_expr "]"')
+    def array_size_decl(self, p):
+        return p.array_size_expr
+
+    # Expresión para tamaño de array (puede ser ID, literal o expresión)
+    @_('ID')
+    def array_size_expr(self, p):
+        return Identifier(name=p.ID)
+
+    @_('INT_LIT')
+    def array_size_expr(self, p):
+        return Integer(value=p.INT_LIT)
+
+    @_('array_size_expr "+" array_size_expr')
+    def array_size_expr(self, p):
+        return BinOper(oper='+', left=p.array_size_expr0, right=p.array_size_expr1)
+
+    @_('array_size_expr "*" array_size_expr')
+    def array_size_expr(self, p):
+        return BinOper(oper='*', left=p.array_size_expr0, right=p.array_size_expr1)
 
     # -------------------
     # Factores (literales e identificadores)
@@ -538,15 +563,15 @@ class BMinorParser(Parser):
         return ArrayType(size=None, elem_type=p.type_array)
 
     # -------------------
-    # Tipos array con tamaño
+    # Tipos array con tamaño (USA array_size_decl)
     # -------------------
-    @_('ARRAY index type_simple')
+    @_('ARRAY array_size_decl type_simple')
     def type_array_sized(self, p):
-        return ArrayType(size=p.index, elem_type=p.type_simple)
+        return ArrayType(size=p.array_size_decl, elem_type=p.type_simple)
 
-    @_('ARRAY index type_array_sized')
+    @_('ARRAY array_size_decl type_array_sized')
     def type_array_sized(self, p):
-        return ArrayType(size=p.index, elem_type=p.type_array_sized)
+        return ArrayType(size=p.array_size_decl, elem_type=p.type_array_sized)
 
     # -------------------
     # Tipos función
@@ -619,13 +644,13 @@ class BMinorParser(Parser):
 def parse_file(filename):
     lexer = BMinorLexer()
     parser = BMinorParser()
-    
+
     try:
         with open(filename, 'r', encoding='utf-8') as f:
             text = f.read()
-        
+
         result = parser.parse(lexer.tokenize(text))
-        
+
         if result:
             print("=" * 60)
             print("Análisis sintáctico exitoso!")
@@ -634,7 +659,7 @@ def parse_file(filename):
         else:
             print("Error: No se pudo construir el AST")
             return None
-            
+
     except FileNotFoundError:
         print(f"Error: No se pudo encontrar el archivo '{filename}'")
         return None
@@ -656,8 +681,8 @@ if __name__ == '__main__':
     if len(sys.argv) != 2:
         print("Uso: python bminor_parser.py archivo.bminor")
         sys.exit(1)
-    
+
     ast = parse_file(sys.argv[1])
     if ast:
         print("\nPara visualizar el AST gráficamente, ejecuta:")
-        print(f"  python astprint.py {sys.argv[1]}") 
+        print(f"  python astprint.py {sys.argv[1]}")

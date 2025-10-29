@@ -11,7 +11,7 @@
 
 N: integer = 8;       // Tamaño del tablero
 
-index: function integer (r: integer, c:integer) = {
+index: function integer (r: integer, c: integer) = {
     return r * N + c;
 }
 
@@ -20,37 +20,39 @@ print_board: function void (board: array [] integer) = {
     r: integer;
     c: integer;
 
-    for (r = 0; r < N; r++) {
-        for (c = 0; c < N; c++) {
-            if (i % 2 == j % 2) {
-                print board[index(r,c)];
+    for (r = 0; r < N; r=r+1) {
+        for (c = 0; c < N; c=c+1 {
+            if (r % 2 == c % 2) {
+                print board[index(r, c)];
             }
         }
         print '\n';
     }
 }
 
-// Función auxiliar para validar movtos válidos
-can_move: function boolean (r, integer, c: integer, board: array [] integer) = {
-    return r >= 0 && r < N && c >= 0 && c < N && board[index(r,c)] == 0;
+// Función auxiliar para validar movimientos válidos
+can_move: function boolean (r: integer, c: integer, board: array [] integer) = {
+    return r >= 0 && r < N && c >= 0 && c < N && board[index(r, c)] == 0;
 }
 
 // Función recursiva para que el caballo recorra el tablero
 walk: function boolean (r: integer, c: integer, m: integer, board: array [] integer, xmoves: array [] integer, ymoves: array [] integer) = {
     i: integer;
+    next_x: integer;
+    next_y: integer;
 
     if (m == N * N) {
         print_board(board);
         return true;
     }
 
-    for (i = 0; i < array_length(xmoves); i++) {
-        next_x: integer = r + xmoves[i];
-        next_y: integer = c + ymoves[i];
+    for (i = 0; i < 8; i=i+1) {
+        next_x = r + xmoves[i];
+        next_y = c + ymoves[i];
         if (can_move(next_x, next_y, board)) {
             board[index(next_x, next_y)] = m;
-            if (walk(next_x, next_y, m+1, board, xmoves, ymoves)) {
-                return true
+            if (walk(next_x, next_y, m + 1, board, xmoves, ymoves)) {
+                return true;
             }
             board[index(next_x, next_y)] = 0;
         }
@@ -59,10 +61,9 @@ walk: function boolean (r: integer, c: integer, m: integer, board: array [] inte
 }
 
 main: function void () = {
-    board: array [N*N] integer;
-
-    xmoves: array [N] integer = {2, 1, -1, -2, -2, -1, 1, 2};
-    ymoves: array [N] integer = {1, 2, 2, 1, -1, -2, -2, -1};
+    board: array [N * N] integer;
+    xmoves: array [8] integer = {2, 1, -1, -2, -2, -1, 1, 2};
+    ymoves: array [8] integer = {1, 2, 2, 1, -1, -2, -2, -1};
 
     if (walk(0, 0, 1, board, xmoves, ymoves)) {
         print "Solución encontrada!\n";

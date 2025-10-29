@@ -1,0 +1,22 @@
+/* Prueba de operadores de incremento */
+
+main: function void () = {
+    i: integer;
+    x: integer;
+
+    // Prueba 1: incremento simple
+    print "Test 1: Incremento básico";
+    i = 5;
+    print "i inicial:", i;
+    x = i;
+    i = i + 1;
+    print "i después de i=i+1:", i;
+
+    // Prueba 2: loop con i = i + 1
+    print "Test 2: Loop con i = i + 1";
+    for (i = 0; i < 5; i = i + 1) {
+        print i;
+    }
+
+    print "Fin de las pruebas";
+}
