@@ -1,0 +1,70 @@
+digraph AST {
+	node [color=deepskyblue shape=box style=filled]
+	edge [arrowhead=none]
+	n01 [label=Program]
+	n02 [label="FuncDecl
+gcd(m, n)
+→ integer"]
+	n03 [label=Body]
+	n02 -> n03
+	n04 [label=If]
+	n05 [label="==" color=lightcoral shape=circle]
+	n06 [label="%" color=lightcoral shape=circle]
+	n07 [label=m color=lightblue]
+	n06 -> n07
+	n08 [label=n color=lightblue]
+	n06 -> n08
+	n05 -> n06
+	n09 [label=0 color=lightyellow]
+	n05 -> n09
+	n04 -> n05 [label=cond]
+	n10 [label=Block]
+	n11 [label=Return]
+	n12 [label=n color=lightblue]
+	n11 -> n12
+	n10 -> n11
+	n04 -> n10 [label=then]
+	n13 [label=Block]
+	n14 [label=Return]
+	n15 [label=Call color=mediumpurple]
+	n16 [label=gcd color=lightblue]
+	n15 -> n16 [label=func]
+	n17 [label=n color=lightblue]
+	n15 -> n17 [label=arg0]
+	n18 [label="%" color=lightcoral shape=circle]
+	n19 [label=m color=lightblue]
+	n18 -> n19
+	n20 [label=n color=lightblue]
+	n18 -> n20
+	n15 -> n18 [label=arg1]
+	n14 -> n15
+	n13 -> n14
+	n04 -> n13 [label=else]
+	n03 -> n04
+	n01 -> n02
+	n21 [label="FuncDecl
+main()
+→ void"]
+	n22 [label=Body]
+	n21 -> n22
+	n23 [label="VarDecl
+result: integer"]
+	n22 -> n23
+	n24 [label="=" color=gold shape=circle]
+	n25 [label=result color=lightblue]
+	n24 -> n25 [label=lval]
+	n26 [label=Call color=mediumpurple]
+	n27 [label=gcd color=lightblue]
+	n26 -> n27 [label=func]
+	n28 [label=20 color=lightyellow]
+	n26 -> n28 [label=arg0]
+	n29 [label=8 color=lightyellow]
+	n26 -> n29 [label=arg1]
+	n24 -> n26 [label=rval]
+	n22 -> n24
+	n30 [label=Print]
+	n31 [label=result color=lightblue]
+	n30 -> n31
+	n22 -> n30
+	n01 -> n21
+}

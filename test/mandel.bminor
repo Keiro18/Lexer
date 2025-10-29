@@ -16,16 +16,16 @@ width: float = 80.0;
 height: float = 40.0;
 threshhold: integer = 1000;
 
-in_mandelbrot: function bool (x0: float, y0: float, n: integer) = {
+in_mandelbrot: function boolean (x0: float, y0: float, n: integer) = {
     x: float = 0.0;
     y: float = 0.0;
     temp: float;
 
     while (n > 0) {
-        xtem = x*x - y*y + x0;
+        temp = x*x - y*y + x0;
         y = 2.0*x*y + y0;
         x = temp;
-        n--;
+        n = n - 1;
         if (x*x + y*y > 4.0) {
             return false;
         }
@@ -36,14 +36,13 @@ in_mandelbrot: function bool (x0: float, y0: float, n: integer) = {
 mandel: function integer () = {
     dx: float = (xmax - xmin) / width;
     dy: float = (ymax - ymin) / height;
-
     y: float = ymax;
     x: float;
 
     while (y >= ymin) {
         x = xmin;
         while (x < xmax) {
-            if in_mandelbrot(x, y, threshhold) {
+            if (in_mandelbrot(x, y, threshhold)) {
                 print '*';
             } else {
                 print '.';
@@ -57,5 +56,5 @@ mandel: function integer () = {
 }
 
 main: function integer () = {
-    mandel();
+    return mandel();
 }
