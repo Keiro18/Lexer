@@ -213,14 +213,29 @@ class Interpreter:
     def visit_PrintStmt(self, node):
         """Sentencia print"""
         if isinstance(node.expr, list):
-            # Múltiples expresiones
-            values = [self.visit(expr) for expr in node.expr]
-            for val in values:
-                print(val, end=' ')
-            print()
+            if len(node.expr) == 0:
+                # print sin argumentos - solo newline
+                print()
+            elif len(node.expr) == 1:
+                # Un solo argumento - imprimir sin espacio ni newline extra
+                value = self.visit(node.expr[0])
+                if value == '\n':
+                    print()
+                else:
+                    print(value, end='')
+            else:
+                # Múltiples expresiones - imprimir con espacios y newline al final
+                values = [self.visit(expr) for expr in node.expr]
+                for val in values:
+                    print(val, end=' ')
+                print()
         elif node.expr:
+            # Un solo expr (no lista) - caso legacy
             value = self.visit(node.expr)
-            print(value, end='')  # Sin newline automático
+            if value == '\n':
+                print()
+            else:
+                print(value, end='')
         else:
             print()
 
@@ -235,6 +250,7 @@ class Interpreter:
         try:
             for stmt in node.body:
                 result = self.visit(stmt)
+                # NO imprimir el resultado de statements individuales
         except ReturnException:
             # Propagar el return hacia arriba
             raise
@@ -415,7 +431,19 @@ class Interpreter:
 
     def visit_Char(self, node):
         """Literal carácter"""
-        return node.value
+        value = node.value
+        
+        # Manejar secuencias de escape
+        if value == '\\n' or value == '\n':
+            return '\n'
+        elif value == '\\t' or value == '\t':
+            return '\t'
+        elif value == '\\r' or value == '\r':
+            return '\r'
+        elif value == '\\0' or value == '\0':
+            return '\0'
+        else:
+            return value
 
     def visit_String(self, node):
         """Literal string"""
