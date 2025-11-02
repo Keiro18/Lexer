@@ -16,7 +16,6 @@ except ImportError:
 
 from checker import Check
 from bminor_builtins import builtins, consts, CallError
-from typesys  import CObject, Number, String, Bool, Nil, Array
 
 
 # =====================================================================

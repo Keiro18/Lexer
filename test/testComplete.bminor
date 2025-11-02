@@ -1,0 +1,522 @@
+// ========================================
+// PRUEBA COMPLETA - VERSIÓN COMPATIBLE
+// ========================================
+// Sin declaraciones dentro de bloques for
+
+// ========================================
+// 1. VARIABLES GLOBALES
+// ========================================
+x: integer = 10;
+y: integer = 20;
+pi: float = 3.14159;
+nombre: string = "B-Minor";
+activo: boolean = true;
+letra: char = 'A';
+
+// ========================================
+// 2. ARRAYS
+// ========================================
+numeros: array [5] integer = {1, 2, 3, 4, 5};
+vocales: array [3] char = {'a', 'e', 'i'};
+
+// ========================================
+// 3. FUNCIONES BÁSICAS
+// ========================================
+
+suma: function integer (a: integer, b: integer) = {
+    return a + b;
+}
+
+resta: function integer (a: integer, b: integer) = {
+    return a - b;
+}
+
+multiplica: function integer (a: integer, b: integer) = {
+    return a * b;
+}
+
+divide: function integer (a: integer, b: integer) = {
+    if (b == 0) {
+        print "Error: Division por cero\n";
+        return 0;
+    }
+    return a / b;
+}
+
+// ========================================
+// 4. POTENCIA (ITERATIVA)
+// ========================================
+
+potencia: function integer (base: integer, exp: integer) = {
+    resultado: integer = 1;
+    i: integer = 0;
+    
+    while (i < exp) {
+        resultado = resultado * base;
+        i++;
+    }
+    
+    return resultado;
+}
+
+// ========================================
+// 5. OPERACIONES CON ARRAYS
+// ========================================
+
+suma_array: function integer (arr: array [] integer, n: integer) = {
+    suma: integer = 0;
+    i: integer = 0;
+    
+    while (i < n) {
+        suma = suma + arr[i];
+        i++;
+    }
+    
+    return suma;
+}
+
+maximo: function integer (arr: array [] integer, n: integer) = {
+    max: integer = arr[0];
+    i: integer = 1;
+    
+    while (i < n) {
+        if (arr[i] > max) {
+            max = arr[i];
+        }
+        i++;
+    }
+    
+    return max;
+}
+
+invertir_array: function void (arr: array [] integer, n: integer) = {
+    i: integer = 0;
+    j: integer = n - 1;
+    temp: integer;
+    
+    while (i < j) {
+        temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+        i++;
+        j--;
+    }
+}
+
+// ========================================
+// 6. FUNCIONES RECURSIVAS
+// ========================================
+
+factorial: function integer (n: integer) = {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+fibonacci: function integer (n: integer) = {
+    if (n <= 1) {
+        return n;
+    }
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+es_primo: function boolean (n: integer) = {
+    i: integer;
+    
+    if (n <= 1) {
+        return false;
+    }
+    if (n == 2) {
+        return true;
+    }
+    
+    i = 2;
+    while (i * i <= n) {
+        if (n % i == 0) {
+            return false;
+        }
+        i++;
+    }
+    
+    return true;
+}
+
+// ========================================
+// 7. ORDENAMIENTO BURBUJA
+// ========================================
+
+bubble_sort: function void (arr: array [] integer, n: integer) = {
+    i: integer = 0;
+    j: integer;
+    temp: integer;
+    
+    while (i < n - 1) {
+        j = 0;
+        while (j < n - i - 1) {
+            if (arr[j] > arr[j + 1]) {
+                temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+            j++;
+        }
+        i++;
+    }
+}
+
+// ========================================
+// 8. PRUEBAS DE CONTROL
+// ========================================
+
+prueba_if_else: function void () = {
+    num: integer = 15;
+    
+    print "=== PRUEBA IF-ELSE ===\n";
+    
+    if (num > 10) {
+        print "El numero es mayor que 10\n";
+    } else {
+        print "El numero es menor o igual a 10\n";
+    }
+    
+    if (num % 2 == 0) {
+        print "El numero es par\n";
+    } else {
+        print "El numero es impar\n";
+    }
+}
+
+prueba_while: function void () = {
+    i: integer = 1;
+    
+    print "\n=== PRUEBA WHILE ===\n";
+    print "Conteo del 1 al 5: ";
+    
+    while (i <= 5) {
+        print i;
+        print " ";
+        i++;
+    }
+    print "\n";
+}
+
+prueba_do_while: function void () = {
+    i: integer = 5;
+    
+    print "\n=== PRUEBA DO-WHILE ===\n";
+    print "Conteo descendente: ";
+    
+    do {
+        print i;
+        print " ";
+        i--;
+    } while (i > 0);
+    print "\n";
+}
+
+prueba_for: function void () = {
+    i: integer;
+    resultado: integer;
+    
+    print "\n=== PRUEBA FOR ===\n";
+    print "Tabla del 5:\n";
+    
+    for (i = 1; i <= 10; i++) {
+        resultado = 5 * i;
+        print "5 x ";
+        print i;
+        print " = ";
+        print resultado;
+        print "\n";
+    }
+}
+
+prueba_operadores: function void () = {
+    a: integer = 10;
+    b: integer = 3;
+    
+    print "\n=== PRUEBA OPERADORES ===\n";
+    
+    print "a = ";
+    print a;
+    print ", b = ";
+    print b;
+    print "\n";
+    
+    print "a + b = ";
+    print a + b;
+    print "\n";
+    
+    print "a - b = ";
+    print a - b;
+    print "\n";
+    
+    print "a * b = ";
+    print a * b;
+    print "\n";
+    
+    print "a / b = ";
+    print a / b;
+    print "\n";
+    
+    print "a % b = ";
+    print a % b;
+    print "\n";
+    
+    print "a ^ b = ";
+    print potencia(a, b);
+    print "\n";
+    
+    print "\nOperadores logicos:\n";
+    print "true && true = ";
+    print true && true;
+    print "\n";
+    
+    print "true || false = ";
+    print true || false;
+    print "\n";
+    
+    print "!true = ";
+    print !true;
+    print "\n";
+    
+    print "\nOperadores de comparacion:\n";
+    print "10 > 5 = ";
+    print 10 > 5;
+    print "\n";
+    
+    print "10 < 5 = ";
+    print 10 < 5;
+    print "\n";
+    
+    print "10 == 10 = ";
+    print 10 == 10;
+    print "\n";
+    
+    print "10 != 5 = ";
+    print 10 != 5;
+    print "\n";
+}
+
+prueba_arrays: function void () = {
+    arr: array [5] integer = {10, 20, 30, 40, 50};
+    i: integer = 0;
+    total: integer;
+    max: integer;
+    
+    print "\n=== PRUEBA ARRAYS ===\n";
+    
+    print "Array original: ";
+    while (i < 5) {
+        print arr[i];
+        print " ";
+        i++;
+    }
+    print "\n";
+    
+    total = suma_array(arr, 5);
+    print "Suma de elementos: ";
+    print total;
+    print "\n";
+    
+    max = maximo(arr, 5);
+    print "Maximo: ";
+    print max;
+    print "\n";
+    
+    invertir_array(arr, 5);
+    print "Array invertido: ";
+    i = 0;
+    while (i < 5) {
+        print arr[i];
+        print " ";
+        i++;
+    }
+    print "\n";
+}
+
+prueba_recursion: function void () = {
+    i: integer;
+    contador: integer;
+    
+    print "\n=== PRUEBA RECURSION ===\n";
+    
+    print "Factorial de 5: ";
+    print factorial(5);
+    print "\n";
+    
+    print "Fibonacci(8): ";
+    print fibonacci(8);
+    print "\n";
+    
+    print "Primeros 10 numeros primos:\n";
+    i = 2;
+    contador = 0;
+    
+    while (contador < 10) {
+        if (es_primo(i)) {
+            print i;
+            print " ";
+            contador++;
+        }
+        i++;
+    }
+    print "\n";
+}
+
+prueba_ordenamiento: function void () = {
+    arr: array [8] integer = {64, 34, 25, 12, 22, 11, 90, 88};
+    i: integer = 0;
+    
+    print "\n=== PRUEBA ORDENAMIENTO ===\n";
+    
+    print "Array desordenado: ";
+    while (i < 8) {
+        print arr[i];
+        print " ";
+        i++;
+    }
+    print "\n";
+    
+    bubble_sort(arr, 8);
+    
+    print "Array ordenado: ";
+    i = 0;
+    while (i < 8) {
+        print arr[i];
+        print " ";
+        i++;
+    }
+    print "\n";
+}
+
+prueba_strings: function void () = {
+    saludo: string = "Hola, ";
+    mundo: string = "Mundo!";
+    i: integer = 0;
+    
+    print "\n=== PRUEBA STRINGS Y CHARS ===\n";
+    
+    print "Concatenacion: ";
+    print saludo + mundo;
+    print "\n";
+    
+    print "Char individual: ";
+    print letra;
+    print "\n";
+    
+    print "Array de chars: ";
+    while (i < 3) {
+        print vocales[i];
+        print " ";
+        i++;
+    }
+    print "\n";
+}
+
+prueba_scopes: function void () = {
+    local_var: integer = 50;
+    block_var: integer;
+    
+    print "\n=== PRUEBA SCOPES ===\n";
+    
+    print "Variable global x: ";
+    print x;
+    print "\n";
+    
+    print "Variable local: ";
+    print local_var;
+    print "\n";
+    
+    {
+        block_var = 25;
+        print "Variable en bloque: ";
+        print block_var;
+        print "\n";
+        
+        print "Acceso a local desde bloque: ";
+        print local_var;
+        print "\n";
+    }
+}
+
+prueba_inc_dec: function void () = {
+    contador: integer = 5;
+    
+    print "\n=== PRUEBA INCREMENTO/DECREMENTO ===\n";
+    
+    print "Contador inicial: ";
+    print contador;
+    print "\n";
+    
+    print "Post-incremento: ";
+    print contador++;
+    print " (ahora es: ";
+    print contador;
+    print ")\n";
+    
+    print "Post-decremento: ";
+    print contador--;
+    print " (ahora es: ";
+    print contador;
+    print ")\n";
+}
+
+// ========================================
+// FUNCIÓN PRINCIPAL
+// ========================================
+
+main: function integer () = {
+    print "========================================\n";
+    print "   SUITE DE PRUEBAS - B-MINOR\n";
+    print "========================================\n";
+    
+    print "\n=== VARIABLES GLOBALES ===\n";
+    print "x = ";
+    print x;
+    print ", y = ";
+    print y;
+    print "\n";
+    print "pi = ";
+    print pi;
+    print "\n";
+    print "nombre = ";
+    print nombre;
+    print "\n";
+    print "activo = ";
+    print activo;
+    print "\n";
+    
+    print "\n=== OPERACIONES BASICAS ===\n";
+    print "suma(10, 20) = ";
+    print suma(10, 20);
+    print "\n";
+    print "resta(50, 30) = ";
+    print resta(50, 30);
+    print "\n";
+    print "multiplica(6, 7) = ";
+    print multiplica(6, 7);
+    print "\n";
+    print "divide(100, 5) = ";
+    print divide(100, 5);
+    print "\n";
+    
+    prueba_if_else();
+    prueba_while();
+    prueba_do_while();
+    prueba_for();
+    prueba_operadores();
+    prueba_arrays();
+    prueba_recursion();
+    prueba_ordenamiento();
+    prueba_strings();
+    prueba_scopes();
+    prueba_inc_dec();
+    
+    print "\n========================================\n";
+    print "   TODAS LAS PRUEBAS COMPLETADAS\n";
+    print "========================================\n";
+    
+    return 0;
+}
