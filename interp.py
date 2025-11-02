@@ -1,4 +1,3 @@
-# interp.py
 """
 Intérprete para B-Minor usando AST-Walking
 Ejecuta directamente el árbol de sintaxis abstracta
@@ -91,26 +90,15 @@ class Interpreter:
         """Declaración de variable sin inicialización"""
         value = None
 
-        # Debug del tipo
-        type_name = type(node.type).__name__
-        print(f"[dim]DEBUG VarDecl: '{node.name}' type={type_name}[/dim]")
-
         # Si tiene valor inicial explícito, usarlo
         if node.value:
             value = self.visit(node.value)
         # Si es un array, inicializarlo con valores por defecto
-        elif type_name == 'ArrayType':
+        elif type(node.type).__name__ == 'ArrayType':
             try:
-                # Debug del size antes de evaluar
-                size_node = node.type.size
-                print(f"[dim]DEBUG: size_node = {size_node}, type = {type(size_node).__name__}[/dim]")
-                if isinstance(size_node, int):
-                    print(f"[dim]DEBUG: size_node es un int de Python con valor {size_node}[/dim]")
-
                 size = self.get_array_size(node.type)
                 default_value = self.get_default_value(node.type.elem_type)
                 value = [default_value for _ in range(size)]
-                print(f"[dim]DEBUG: Array '{node.name}' creado con tamaño {size}[/dim]")
             except Exception as e:
                 raise Exception(f"Error al inicializar array '{node.name}': {e}")
 
@@ -124,9 +112,6 @@ class Interpreter:
             value = [self.visit(expr) for expr in node.init]
         else:
             value = self.visit(node.init)
-
-        # Debug
-        print(f"[dim]DEBUG: VarDeclInit '{node.name}' = {value} (type: {type(value).__name__})[/dim]")
 
         self.env[node.name] = value
         return value
@@ -159,6 +144,9 @@ class Interpreter:
                     result = self.visit(node.body)
                 except ContinueException:
                     continue
+                except ReturnException:
+                    # Propagar return hacia arriba
+                    raise
         except BreakException:
             pass
 
@@ -232,7 +220,7 @@ class Interpreter:
             print()
         elif node.expr:
             value = self.visit(node.expr)
-            print(value)
+            print(value, end='')  # Sin newline automático
         else:
             print()
 
@@ -247,6 +235,9 @@ class Interpreter:
         try:
             for stmt in node.body:
                 result = self.visit(stmt)
+        except ReturnException:
+            # Propagar el return hacia arriba
+            raise
         finally:
             # Restaurar scope anterior
             self.env = self.env.parents
@@ -280,48 +271,50 @@ class Interpreter:
             # Retornar valor antiguo (postfijo)
             return old_value
 
-        # Operadores binarios normales
+        # Operadores binarios normales - evaluar operandos
         left = self.visit(node.left)
         right = self.visit(node.right) if node.right else None
 
+        # Tabla de operadores para mayor velocidad
+        op = node.oper
+        
         # Operadores aritméticos
-        if node.oper == '+':
+        if op == '+':
             return left + right
-        elif node.oper == '-':
+        if op == '-':
             return left - right
-        elif node.oper == '*':
+        if op == '*':
             return left * right
-        elif node.oper == '/':
+        if op == '/':
             if right == 0:
                 raise Exception("División por cero")
             return left / right if isinstance(left, float) or isinstance(right, float) else left // right
-        elif node.oper == '%':
+        if op == '%':
             return left % right
-        elif node.oper == '^':
+        if op == '^':
             return left ** right
 
         # Operadores de comparación
-        elif node.oper == '<':
+        if op == '<':
             return left < right
-        elif node.oper == '<=':
+        if op == '<=':
             return left <= right
-        elif node.oper == '>':
+        if op == '>':
             return left > right
-        elif node.oper == '>=':
+        if op == '>=':
             return left >= right
-        elif node.oper == '==':
+        if op == '==':
             return left == right
-        elif node.oper == '!=':
+        if op == '!=':
             return left != right
 
         # Operadores lógicos
-        elif node.oper == '&&':
+        if op == '&&':
             return left and right
-        elif node.oper == '||':
+        if op == '||':
             return left or right
 
-        else:
-            raise Exception(f"Operador binario no soportado: {node.oper}")
+        raise Exception(f"Operador binario no soportado: {node.oper}")
 
     def visit_UnaryOper(self, node):
         """Operador unario"""
@@ -395,11 +388,7 @@ class Interpreter:
         if not isinstance(array, list):
             raise Exception(f"'{array_name}' no es un array")
 
-        # Debug: mostrar si el índice es sospechoso
         if index < 0 or index >= len(array):
-            print(f"[red]DEBUG:[/red] Intento de acceso a '{array_name}[{index}]'")
-            print(f"  Tamaño del array: {len(array)}")
-            print(f"  Índice: {index} (tipo: {type(index).__name__})")
             raise Exception(f"Índice {index} fuera de rango para array '{array_name}' (tamaño: {len(array)})")
 
         return array[index]
@@ -466,14 +455,19 @@ class Interpreter:
         raise Exception(f"Variable '{name}' no definida")
 
     def set_variable(self, name, value):
-        """Asigna valor a una variable"""
-        # Buscar en todos los scopes
-        for scope in self.env.maps:
+        """Asigna valor a una variable - CORREGIDO"""
+        # PRIMERO: Buscar en scope actual (primer map del ChainMap)
+        if name in self.env.maps[0]:
+            self.env.maps[0][name] = value
+            return
+        
+        # SEGUNDO: Buscar en scopes padres (del más cercano al más lejano)
+        for scope in self.env.maps[1:]:
             if name in scope:
                 scope[name] = value
                 return
 
-        # Si no existe, crear en scope actual
+        # TERCERO: Si no existe en ningún scope, crear en scope actual
         self.env[name] = value
 
     def call_function(self, func_node, args):
@@ -518,39 +512,28 @@ class Interpreter:
         if not array_type.size:
             raise Exception("Array sin tamaño especificado")
 
-        # Debug
         size_node = array_type.size
         size_type = type(size_node).__name__
 
         # Si el tamaño es un nodo Integer
         if size_type == 'Integer':
-            result = size_node.value
-            print(f"[dim]DEBUG: Array size from Integer = {result}[/dim]")
-            return result
+            return size_node.value
 
         # Si el tamaño es un Identifier (variable)
         if size_type == 'Identifier':
-            var_value = self.get_variable(size_node.name)
-            print(
-                f"[dim]DEBUG: Array size from Identifier '{size_node.name}' = {var_value} (type: {type(var_value).__name__})[/dim]")
-            return var_value
+            return self.get_variable(size_node.name)
 
         # Si es un literal Python directo
         if isinstance(size_node, int):
-            print(f"[dim]DEBUG: Array size from int = {size_node}[/dim]")
             return size_node
 
         # Si es una expresión compleja (como N*N), evaluarla
         if hasattr(size_node, 'oper'):
-            result = self.visit(size_node)
-            print(f"[dim]DEBUG: Array size from expression = {result}[/dim]")
-            return result
+            return self.visit(size_node)
 
         # Intentar evaluar como expresión
         try:
-            result = self.visit(size_node)
-            print(f"[dim]DEBUG: Array size from visit = {result} (type: {type(result).__name__})[/dim]")
-            return result
+            return self.visit(size_node)
         except Exception as e:
             raise Exception(f"No se pudo determinar el tamaño del array: {size_node} (error: {e})")
 
@@ -610,7 +593,7 @@ def interpret_file(filename):
         interp = Interpreter()
         result = interp.visit(ast)
 
-        print("=" * 60)
+        print("\n" + "=" * 60)
         print(f"[green]✓[/green] Ejecución completada")
 
         if result is not None:
