@@ -1,0 +1,21 @@
+// Prueba de ciclos y condicionales
+main: function integer () = {
+    print "Números pares del 0 al 10:\n";
+    
+    i: integer;
+    for (i = 0; i <= 10; i++) {
+        if (i % 2 == 0) {
+            print i, " ";
+        }
+    }
+    print "\n";
+    
+    print "\nCuenta regresiva desde 5:\n";
+    contador: integer = 5;
+    while (contador >= 0) {
+        print contador, '\n';
+        contador = contador - 1;
+    }
+    
+    return 0;
+}

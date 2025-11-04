@@ -39,7 +39,7 @@ main: function void () = {
     print "Primos menores que 100:";
     for (i = 2; i < N; i = i + 1) {
         if (isprime[i]) {
-            print i;
+            print i, " | ";  
         }
     }
 }

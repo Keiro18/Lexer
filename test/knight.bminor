@@ -9,7 +9,7 @@
  *                                                                     *
  * =================================================================== */
 
-N: integer = 8;       // Tamaño del tablero
+N: integer = 5;       // Tamaño del tablero
 
 index: function integer (r: integer, c: integer) = {
     return r * N + c;
@@ -20,11 +20,9 @@ print_board: function void (board: array [] integer) = {
     r: integer;
     c: integer;
 
-    for (r = 0; r < N; r=r+1) {
-        for (c = 0; c < N; c=c+1 {
-            if (r % 2 == c % 2) {
-                print board[index(r, c)];
-            }
+    for (r = 0; r < N; r++) {
+        for (c = 0; c < N; c++) {
+            print board[index(r, c)], " ";
         }
         print '\n';
     }
@@ -32,7 +30,15 @@ print_board: function void (board: array [] integer) = {
 
 // Función auxiliar para validar movimientos válidos
 can_move: function boolean (r: integer, c: integer, board: array [] integer) = {
-    return r >= 0 && r < N && c >= 0 && c < N && board[index(r, c)] == 0;
+    valid_pos: boolean;
+    valid_cell: boolean;
+    
+    valid_pos = r >= 0 && r < N && c >= 0 && c < N;
+    if (valid_pos) {
+        valid_cell = board[index(r, c)] == 0;
+        return valid_cell;
+    }
+    return false;
 }
 
 // Función recursiva para que el caballo recorra el tablero
@@ -46,7 +52,7 @@ walk: function boolean (r: integer, c: integer, m: integer, board: array [] inte
         return true;
     }
 
-    for (i = 0; i < 8; i=i+1) {
+    for (i = 0; i < 8; i++) {
         next_x = r + xmoves[i];
         next_y = c + ymoves[i];
         if (can_move(next_x, next_y, board)) {
@@ -60,14 +66,18 @@ walk: function boolean (r: integer, c: integer, m: integer, board: array [] inte
     return false;
 }
 
-main: function void () = {
+main: function integer () = {
     board: array [N * N] integer;
     xmoves: array [8] integer = {2, 1, -1, -2, -2, -1, 1, 2};
     ymoves: array [8] integer = {1, 2, 2, 1, -1, -2, -2, -1};
-
-    if (walk(0, 0, 1, board, xmoves, ymoves)) {
-        print "Solución encontrada!\n";
+    
+    board[index(0, 0)] = 1;
+    
+    if (walk(0, 0, 2, board, xmoves, ymoves)) {
+        print "Solucion encontrada!\n";
     } else {
-        print "No existe solución\n";
+        print "No existe solucion\n";
     }
+    
+    return 0;
 }

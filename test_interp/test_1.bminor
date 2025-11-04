@@ -1,0 +1,14 @@
+// Prueba básica de variables y operaciones
+main: function integer () = {
+    a: integer = 10;
+    b: integer = 20;
+    suma: integer;
+    
+    suma = a + b;
+    print "La suma de ", a, " y ", b, " es: ", suma, '\n';
+    
+    producto: integer = a * b;
+    print "El producto es: ", producto, '\n';
+    
+    return 0;
+}

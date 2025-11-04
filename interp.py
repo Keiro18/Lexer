@@ -1,5 +1,3 @@
-# interp.py
-
 '''
 Tree-walking interpreter
 Intérprete para B-Minor usando AST-Walking
@@ -317,13 +315,13 @@ class Interpreter(Visitor):
         return result
     
     def visit_ForStmt(self, node):
-        """Sentencia for"""
-        # Crear nuevo scope para el for
+        """Sentencia for con scope correcto para declaraciones"""
+        # Crear scope para la inicialización del for
         self.env = self.env.new_child()
         
         result = None
         try:
-            # Inicialización
+            # Inicialización (en el scope del for)
             if node.init:
                 self.visit(node.init)
             
@@ -334,20 +332,27 @@ class Interpreter(Visitor):
                     if not _is_truthy(self.visit(node.cond)):
                         break
                 
-                # Cuerpo
+                # Cuerpo - crear nuevo scope para CADA iteración
+                # Esto permite que cada iteración tenga sus propias variables
+                self.env = self.env.new_child()
                 try:
                     result = self.visit(node.body)
                 except ContinueException:
                     pass
+                except ReturnException:
+                    raise
+                finally:
+                    # Restaurar scope después de cada iteración
+                    self.env = self.env.parents
                 
-                # Incremento
+                # Incremento (en el scope del for, no del body)
                 if node.step:
                     self.visit(node.step)
         
         except BreakException:
             pass
         finally:
-            # Restaurar scope
+            # Restaurar scope del for
             self.env = self.env.parents
         
         return result

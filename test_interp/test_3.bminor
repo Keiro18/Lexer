@@ -1,0 +1,33 @@
+// Prueba de scope y declaraciones dentro de ciclos
+main: function integer () = {
+    print "Prueba de scope en ciclos:\n\n";
+    
+    // Declarar variable fuera del for
+    i: integer;
+    for (i = 0; i < 3; i++) {
+        // Nueva variable en cada iteración
+        temp: integer = i * 10;
+        print "Iteracion ", i, ": temp = ", temp, '\n';
+        
+        // Bloque anidado con su propio scope
+        {
+            local: integer = temp + 5;
+            print "  -> local en bloque = ", local, '\n';
+        }
+        // local no existe aquí
+    }
+    // temp no existe aquí, pero i sí
+    
+    print "\nPrueba de shadowing:\n";
+    x: integer = 100;
+    print "x global = ", x, '\n';
+    
+    {
+        x: integer = 200;  // Shadowing
+        print "x en bloque = ", x, '\n';
+    }
+    
+    print "x global despues = ", x, '\n';
+    
+    return 0;
+}

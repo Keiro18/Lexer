@@ -1,0 +1,167 @@
+// ========================================
+// Números Primos y Factorización
+// ========================================
+
+// Verificar si un número es primo
+es_primo: function boolean (n: integer) = {
+    i: integer;
+    
+    if (n <= 1) {
+        return false;
+    }
+    
+    if (n <= 3) {
+        return true;
+    }
+    
+    if (n % 2 == 0 || n % 3 == 0) {
+        return false;
+    }
+    
+    i = 5;
+    while (i * i <= n) {
+        if (n % i == 0 || n % (i + 2) == 0) {
+            return false;
+        }
+        i = i + 6;
+    }
+    
+    return true;
+}
+
+// Encontrar el siguiente primo
+siguiente_primo: function integer (n: integer) = {
+    candidato: integer;
+    
+    candidato = n + 1;
+    
+    while (!es_primo(candidato)) {
+        candidato++;
+    }
+    
+    return candidato;
+}
+
+// Factorización prima
+factorizar: function void (n: integer) = {
+    factor: integer;
+    temp: integer;
+    exponente: integer;
+    
+    temp = n;
+    print n, " = ";
+    
+    // Verificar factor 2
+    if (temp % 2 == 0) {
+        exponente = 0;
+        while (temp % 2 == 0) {
+            exponente++;
+            temp = temp / 2;
+        }
+        print "2^", exponente;
+        if (temp > 1) {
+            print " * ";
+        }
+    }
+    
+    // Verificar factores impares
+    factor = 3;
+    while (factor * factor <= temp) {
+        if (temp % factor == 0) {
+            exponente = 0;
+            while (temp % factor == 0) {
+                exponente++;
+                temp = temp / factor;
+            }
+            print factor, "^", exponente;
+            if (temp > 1) {
+                print " * ";
+            }
+        }
+        factor = factor + 2;
+    }
+    
+    // Si queda un factor primo mayor
+    if (temp > 1) {
+        print temp, "^1";
+    }
+    
+    print "\n";
+}
+
+// Calcular MCD usando algoritmo de Euclides
+mcd: function integer (a: integer, b: integer) = {
+    temp: integer;
+    
+    while (b != 0) {
+        temp = b;
+        b = a % b;
+        a = temp;
+    }
+    
+    return a;
+}
+
+// Calcular MCM
+mcm: function integer (a: integer, b: integer) = {
+    return (a * b) / mcd(a, b);
+}
+
+main: function integer () = {
+    i: integer;
+    num: integer;
+    a: integer;
+    b: integer;
+    
+    print "=============================================\n";
+    print "  ANALISIS DE NUMEROS PRIMOS\n";
+    print "=============================================\n\n";
+    
+    // Listar primeros 15 primos
+    print "Primeros 15 numeros primos:\n";
+    num = 2;
+    for (i = 0; i < 15; i++) {
+        print num, " ";
+        num = siguiente_primo(num);
+    }
+    print "\n\n";
+    
+    // Verificar si algunos números son primos
+    print "--- Verificacion de Primalidad ---\n";
+    num = 17;
+    print num, " es primo? ";
+    if (es_primo(num)) {
+        print "SI\n";
+    } else {
+        print "NO\n";
+    }
+    
+    num = 51;
+    print num, " es primo? ";
+    if (es_primo(num)) {
+        print "SI\n";
+    } else {
+        print "NO\n";
+    }
+    
+    // Factorización
+    print "\n--- Factorizacion Prima ---\n";
+    factorizar(60);
+    factorizar(100);
+    factorizar(147);
+    factorizar(256);
+    
+    // MCD y MCM
+    print "\n--- MCD y MCM ---\n";
+    a = 48;
+    b = 18;
+    print "MCD(", a, ", ", b, ") = ", mcd(a, b), "\n";
+    print "MCM(", a, ", ", b, ") = ", mcm(a, b), "\n";
+    
+    a = 24;
+    b = 36;
+    print "MCD(", a, ", ", b, ") = ", mcd(a, b), "\n";
+    print "MCM(", a, ", ", b, ") = ", mcm(a, b), "\n";
+    
+    return 0;
+}

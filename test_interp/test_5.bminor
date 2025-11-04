@@ -1,0 +1,97 @@
+// Factorial recursivo
+factorial: function integer (n: integer) = {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+// Fibonacci recursivo
+fibonacci: function integer (n: integer) = {
+    if (n <= 1) {
+        return n;
+    }
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+// Fibonacci iterativo (más eficiente)
+fibonacci_iter: function integer (n: integer) = {
+    if (n <= 1) {
+        return n;
+    }
+    
+    a: integer = 0;
+    b: integer = 1;
+    temp: integer;
+    i: integer;
+    
+    for (i = 2; i <= n; i++) {
+        temp = a + b;
+        a = b;
+        b = temp;
+    }
+    
+    return b;
+}
+
+// Bubble sort
+bubble_sort: function void (arr: array [10] integer, n: integer) = {
+    i: integer;
+    j: integer;
+    temp: integer;
+    
+    for (i = 0; i < n - 1; i++) {
+        for (j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                // Swap
+                temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
+
+// Función principal
+main: function integer () = {
+    print "=== PRUEBAS AVANZADAS ===\n\n";
+    
+    // 1. Factorial
+    print "--- Factorials ---\n";
+    i: integer;
+    for (i = 0; i <= 6; i++) {
+        print i, "! = ", factorial(i), '\n';
+    }
+    
+    // 2. Fibonacci
+    print "\n--- Fibonacci (primeros 10) ---\n";
+    for (i = 0; i < 10; i++) {
+        print "F(", i, ") = ", fibonacci_iter(i), '\n';
+    }
+    
+    // 3. Ordenamiento
+    print "\n--- Bubble Sort ---\n";
+    datos: array [10] integer = {64, 34, 25, 12, 22, 11, 90, 88, 45, 50};
+    
+    print "Array original: ";
+    for (i = 0; i < 10; i++) {
+        print datos[i], " ";
+    }
+    print '\n';
+    
+    bubble_sort(datos, 10);
+    
+    print "Array ordenado: ";
+    for (i = 0; i < 10; i++) {
+        print datos[i], " ";
+    }
+    print '\n';
+    
+    // 4. Prueba de recursión profunda
+    print "\n--- Factorial grande ---\n";
+    n: integer = 10;
+    resultado: integer = factorial(n);
+    print "Factorial de ", n, " = ", resultado, '\n';
+    
+    return 0;
+}

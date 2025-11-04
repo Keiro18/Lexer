@@ -1,0 +1,43 @@
+// ========================================
+// Torres de Hanoi - Solución Recursiva
+// ========================================
+
+movimientos: integer;
+
+hanoi: function void (n: integer, origen: char, destino: char, auxiliar: char) = {
+    if (n == 1) {
+        movimientos++;
+        print "Movimiento ", movimientos, ": Mover disco 1 de ", origen, " a ", destino, "\n";
+        return;
+    }
+    
+    // Mover n-1 discos de origen a auxiliar usando destino
+    hanoi(n - 1, origen, auxiliar, destino);
+    
+    // Mover el disco más grande de origen a destino
+    movimientos++;
+    print "Movimiento ", movimientos, ": Mover disco ", n, " de ", origen, " a ", destino, "\n";
+    
+    // Mover n-1 discos de auxiliar a destino usando origen
+    hanoi(n - 1, auxiliar, destino, origen);
+}
+
+main: function integer () = {
+    n: integer;
+    
+    movimientos = 0;
+    n = 4;  // Número de discos
+    
+    print "==============================================\n";
+    print "  TORRES DE HANOI - ", n, " discos\n";
+    print "==============================================\n\n";
+    
+    hanoi(n, 'A', 'C', 'B');
+    
+    print "\n==============================================\n";
+    print "  Total de movimientos: ", movimientos, "\n";
+    print "  Movimientos teoricos: ", (2^n) - 1, "\n";
+    print "==============================================\n";
+    
+    return 0;
+}

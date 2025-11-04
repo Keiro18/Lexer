@@ -2,18 +2,18 @@
 '''
 Sistema de tipos
 ================
-Este archivo implementa las características básicas del sistema de tipos. Existe
-mucha flexibilidad, pero la mejor estrategia podría ser no darle demasiadas
+Este archivo implementa las características básicas del sistema de tipos. Existe
+mucha flexibilidad, pero la mejor estrategia podría ser no darle demasiadas
 vueltas al problema. Al menos no al principio. Estos son los requisitos
-básicos mínimos:
+básicos mínimos:
 
 1. Los tipos tienen identidad (p. ej., al menos un nombre como 'int', 'float', 'char').
 2. Los tipos deben ser comparables (p. ej., int != float).
 3. Los tipos admiten diferentes operadores (p. ej., +, -, *, /, etc.).
-Una forma de lograr todos estos objetivos es comenzar con algún tipo de
-enfoque basado en tablas. No es lo más sofisticado, pero funcionará
+Una forma de lograr todos estos objetivos es comenzar con algún tipo de
+enfoque basado en tablas. No es lo más sofisticado, pero funcionará
 como punto de partida. Puede volver a refactorizar el sistema de tipos
-más adelante.
+más adelante.
 '''
 
 class CheckError(Exception):
@@ -30,6 +30,7 @@ _bin_ops = {
 	('integer', '*', 'integer') : 'integer',
 	('integer', '/', 'integer') : 'integer',
 	('integer', '%', 'integer') : 'integer',
+	('integer', '^', 'integer') : 'integer',  # ✅ AGREGADO: Exponenciación
 
 	('integer', '=', 'integer') : 'integer',
 
@@ -45,6 +46,7 @@ _bin_ops = {
 	('float', '-', 'float') : 'float',
 	('float', '*', 'float') : 'float',
 	('float', '/', 'float') : 'float',
+	('float', '^', 'float') : 'float',  # ✅ AGREGADO: Exponenciación
 
 	('float', '=', 'float') : 'float',
 
@@ -80,7 +82,6 @@ _bin_ops = {
 _unary_ops = {
 	('+', 'integer') : 'integer',
 	('-', 'integer') : 'integer',
-	('^', 'integer') : 'integer',
 
 	('+', 'float')   : 'float',
 	('-', 'float')   : 'float',

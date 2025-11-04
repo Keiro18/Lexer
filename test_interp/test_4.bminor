@@ -1,0 +1,65 @@
+// Funciones auxiliares
+sumar_array: function integer (arr: array [5] integer, n: integer) = {
+    suma: integer = 0;
+    i: integer;
+    
+    for (i = 0; i < n; i++) {
+        suma = suma + arr[i];
+    }
+    
+    return suma;
+}
+
+encontrar_maximo: function integer (arr: array [5] integer, n: integer) = {
+    max: integer = arr[0];
+    i: integer;
+    
+    for (i = 1; i < n; i++) {
+        if (arr[i] > max) {
+            max = arr[i];
+        }
+    }
+    
+    return max;
+}
+
+// Función principal
+main: function integer () = {
+    print "=== Prueba de Arrays y Funciones ===\n\n";
+    
+    // Declarar e inicializar array
+    numeros: array [5] integer = {10, 25, 5, 30, 15};
+    
+    print "Array: ";
+    i: integer;
+    for (i = 0; i < 5; i++) {
+        print numeros[i], " ";
+    }
+    print "\n\n";
+    
+    // Calcular suma
+    total: integer = sumar_array(numeros, 5);
+    print "Suma de elementos: ", total, '\n';
+    
+    // Calcular promedio
+    promedio: integer = total / 5;
+    print "Promedio: ", promedio, '\n';
+    
+    // Encontrar máximo
+    maximo: integer = encontrar_maximo(numeros, 5);
+    print "Máximo valor: ", maximo, '\n';
+    
+    // Modificar array
+    print "\nDuplicando valores...\n";
+    for (i = 0; i < 5; i++) {
+        numeros[i] = numeros[i] * 2;
+    }
+    
+    print "Array modificado: ";
+    for (i = 0; i < 5; i++) {
+        print numeros[i], " ";
+    }
+    print '\n';
+    
+    return 0;
+}
