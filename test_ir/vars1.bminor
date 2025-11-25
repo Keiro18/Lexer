@@ -1,0 +1,5 @@
+main: function integer() = {
+    x: integer = 10;
+    y: integer = 20;
+    return x + y * 2;
+}

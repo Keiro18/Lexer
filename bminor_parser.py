@@ -37,9 +37,14 @@ class BMinorParser(Parser):
     # -------------------
     # Programa principal
     # -------------------
+        
     @_('decl_list')
     def prog(self, p):
-        return Program(body=p.decl_list)
+        return Program(p.decl_list)
+
+
+
+
 
     # -------------------
     # Lista de declaraciones

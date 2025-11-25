@@ -36,19 +36,27 @@ class Check:
         checker = cls()
         env = Symtab('global')
 
-        # Primera pasada: Declarar todas las funciones y variables globales
-        for decl in program.body:
-            if type(decl).__name__ == 'FuncDecl':
-                checker.declare_function(decl, env)
-            elif type(decl).__name__ in ['VarDecl', 'VarDeclInit']:
-                checker.visit(decl, env)
+        # -----------------------------------------
+        # PRIMERA PASADA: globales y cabeceras
+        # -----------------------------------------
 
-        # Segunda pasada: Verificar cuerpos de funciones
-        for decl in program.body:
-            if type(decl).__name__ == 'FuncDecl' and decl.body:
-                checker.check_function_body(decl, env)
+        # Variables globales
+        for g in program.globals:
+            checker.visit(g, env)
+
+        # Declaraciones de funciones (solo tipos)
+        for f in program.functions:
+            checker.declare_function(f, env)
+
+        # -----------------------------------------
+        # SEGUNDA PASADA: cuerpos de funciones
+        # -----------------------------------------
+        for f in program.functions:
+            if f.body:
+                checker.check_function_body(f, env)
 
         return env, checker.errors
+
 
     def declare_function(self, n, env: Symtab):
         """Declara una función sin verificar su cuerpo"""

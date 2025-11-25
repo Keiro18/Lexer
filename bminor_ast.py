@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from multimethod import multimeta, multimethod
 from typing import List, Union
 
+
 # =====================================================================
 # Clases Abstractas
 # =====================================================================
@@ -32,8 +33,25 @@ class Declaration(Statement):
 # Programa
 # =====================================================================
 @dataclass
-class Program(Statement):
-    body: List[Statement] = field(default_factory=list)
+@dataclass
+class Program(Node):
+    def __init__(self, decls):
+        self.body = decls
+
+        self.globals = []
+        self.functions = []
+
+        from bminor_ast import FuncDecl, VarDecl, VarDeclInit
+
+        for d in decls:
+            if isinstance(d, FuncDecl):
+                self.functions.append(d)
+            else:
+                self.globals.append(d)
+
+
+
+
 
 # =====================================================================
 # Declaraciones

@@ -1,0 +1,9 @@
+g_int: integer = 7;
+g_char: char = 'A';
+
+main: function integer() = {
+    print "Hola mundo", '\n';
+    print g_int, '\n';
+    print g_char, '\n';
+    return 0;
+}

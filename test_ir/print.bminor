@@ -1,0 +1,10 @@
+g_int: integer = 7;
+g_char: char = 'A';
+
+main: function integer() = {
+    print g_int;
+    print '\n';
+    print g_char;
+    print '\n';
+    return 0;
+}
