@@ -1,0 +1,9 @@
+main: function void() = {
+    x: integer = 5;
+
+    if (x > 3) {
+        print 1;
+    } else {
+        print 0;
+    }
+}

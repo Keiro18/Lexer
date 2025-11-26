@@ -37,14 +37,9 @@ class BMinorParser(Parser):
     # -------------------
     # Programa principal
     # -------------------
-        
     @_('decl_list')
     def prog(self, p):
         return Program(p.decl_list)
-
-
-
-
 
     # -------------------
     # Lista de declaraciones
@@ -60,14 +55,27 @@ class BMinorParser(Parser):
     # -------------------
     # Declaraciones
     # -------------------
-    @_('ID ":" type_simple ";"')
-    def decl(self, p):
-        return VarDecl(name=p.ID, type=p.type_simple, value=None)
 
-    @_('ID ":" type_array_sized ";"')
-    def decl(self, p):
-        return VarDecl(name=p.ID, type=p.type_array_sized, value=None)
+    # Tipo unificado para declaraciones de variables
+    # (simple, array, array con tamaño)
+    @_('type_simple')
+    def type_any(self, p):
+        return p.type_simple
 
+    @_('type_array')
+    def type_any(self, p):
+        return p.type_array
+
+    @_('type_array_sized')
+    def type_any(self, p):
+        return p.type_array_sized
+
+    # VarDecl: permite tipo simple o array
+    @_('ID ":" type_any ";"')
+    def decl(self, p):
+        return VarDecl(name=p.ID, type=p.type_any, value=None)
+
+    # FuncDecl: tipo función
     @_('ID ":" type_func ";"')
     def decl(self, p):
         return FuncDecl(name=p.ID, type_func=p.type_func, body=None)
@@ -79,14 +87,17 @@ class BMinorParser(Parser):
     # -------------------
     # Declaraciones con inicialización
     # -------------------
+    # Escalar inicializado: x: integer = 10;
     @_('ID ":" type_simple "=" expr ";"')
     def decl_init(self, p):
         return VarDeclInit(name=p.ID, typ=p.type_simple, init=p.expr)
 
+    # Array inicializado: a: array[N] integer = { ... };
     @_('ID ":" type_array_sized "=" "{" opt_expr_list "}" ";"')
     def decl_init(self, p):
         return VarDeclInit(name=p.ID, typ=p.type_array_sized, init=p.opt_expr_list)
 
+    # Funciones con cuerpo
     @_('ID ":" type_func "=" "{" opt_stmt_list "}"')
     def decl_init(self, p):
         return FuncDecl(name=p.ID, type_func=p.type_func, body=p.opt_stmt_list)
@@ -389,7 +400,7 @@ class BMinorParser(Parser):
         return p.expr6
 
     # -------------------
-    # Expresión nivel 6 (multiplicación/división)
+    # Expresión nivel 6 (multiplicación/división/módulo)
     # -------------------
     @_('expr6 "*" expr7')
     def expr6(self, p):
@@ -468,7 +479,7 @@ class BMinorParser(Parser):
         return p.factor
 
     # -------------------
-    # Índice de array (SEPARADO para evitar conflictos)
+    # Índice de array (uso en expresiones)
     # -------------------
     @_('"[" expr "]"')
     def array_index(self, p):

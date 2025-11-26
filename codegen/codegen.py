@@ -56,6 +56,7 @@ class IRGenerator:
 
         # Contador para nombres únicos de bloques
         self.block_counter = 0
+        self.const_globals = {}
 
         # Registrar primitivas de impresión (externs)
         self.module.add_extern("print_int", "void", ["i32"])
@@ -152,19 +153,23 @@ class IRGenerator:
 
     def _eval_const_int(self, expr):
         """
-        Evalúa una expresión del AST en tiempo de compilación.
+        Evalúa una expresión entera en tiempo de compilación
+        (para tamaños de arrays, etc.).
         """
+        # Literal entero
         if isinstance(expr, Integer):
             return expr.value
 
+        # Identificador que referencia una constante global entera (como N)
         if isinstance(expr, Identifier):
-            g = self.module.get_global(expr.name)
-            if g and isinstance(g.init, Constant):
-                return g.init.value
+            name = expr.name
+            if name in self.const_globals:
+                return self.const_globals[name]
             raise Exception(
-                f"Tamaño de arreglo requiere constante entera; '{expr.name}' no es constante"
+                f"Tamaño de arreglo requiere constante entera; '{name}' no es constante"
             )
 
+        # Expresión aritmética constante
         if isinstance(expr, BinOper):
             left = self._eval_const_int(expr.left)
             right = self._eval_const_int(expr.right)
@@ -176,15 +181,32 @@ class IRGenerator:
                 return left * right
             if expr.oper == '/':
                 return left // right
-            raise Exception(f"Operador no soportado: {expr.oper}")
+            raise Exception(f"Operador no soportado en constante: {expr.oper}")
+
+        # (Opcional) unario -
+        if isinstance(expr, UnaryOper) and expr.oper == '-' and isinstance(expr.expr, Integer):
+            return -expr.expr.value
 
         raise Exception(f"Tamaño de arreglo estático inválido: {expr}")
+
 
     # ======================================================
     # generate()
     # ======================================================
 
     def generate(self, program: Program) -> Module:
+        # 🔹 PASADA PREVIA: detectar constantes globales enteras (como N = 100)
+        self.const_globals = {}
+        for decl in program.globals:
+            if isinstance(decl, VarDeclInit):
+                # Sólo nos interesan las integer
+                if hasattr(decl.typ, "name") and decl.typ.name == "integer":
+                    init = decl.init
+                    if isinstance(init, Integer):
+                        self.const_globals[decl.name] = init.value
+                    elif isinstance(init, UnaryOper) and init.oper == '-' and isinstance(init.expr, Integer):
+                        self.const_globals[decl.name] = -init.expr.value
+
         # 1) Globales
         for decl in program.globals:
             if isinstance(decl, VarDecl):
@@ -198,40 +220,71 @@ class IRGenerator:
 
         return self.module
 
+
     # ======================================================
     # Globales
     # ======================================================
 
     def _gen_global_decl(self, node: VarDecl):
+        # Arrays globales
         if isinstance(node.type, ArrayType):
             elem = self._map_type(node.type.elem_type)
             size = self._eval_const_int(node.type.size)
             arr_type = f"[{size} x {elem}]"
+
+            # LLVM exige zeroinitializer para arrays globales
             g = Global(node.name, arr_type, "zeroinitializer")
+
             self.module.add_global(g)
             return
 
-        # Escalares
+        # Escalares globales
         typ = self._map_type(node.type)
         g = Global(node.name, typ, None)
         self.module.add_global(g)
 
 
+
     def _gen_global_init(self, node: VarDeclInit):
+        # Arrays globales con inicialización (por ahora: zeroinitializer)
         if isinstance(node.typ, ArrayType):
             elem = self._map_type(node.typ.elem_type)
             size = self._eval_const_int(node.typ.size)
             arr_type = f"[{size} x {elem}]"
 
-            # Inicialización dinámica de array global NO soportada → usar zeroinitializer
+            # No soportamos aún inicialización explícita de arrays globales:
             g = Global(node.name, arr_type, "zeroinitializer")
             self.module.add_global(g)
             return
 
-        # --- inicialización de escalar existente ---
+        # -------------------------------
+        # Escalares globales con init
+        # -------------------------------
         typ = self._map_type(node.typ)
         init = node.init
-        ...
+
+        # Literales directos
+        if isinstance(init, Integer):
+            val = Constant(init.value, "i32")
+        elif isinstance(init, Float):
+            val = Constant(init.value, "float")
+        elif isinstance(init, Boolean):
+            val = Constant(1 if init.value else 0, "i1")
+        elif isinstance(init, Char):
+            val = Constant(ord(init.value), "i8")
+
+        # Unario menos sobre entero/float: -10, -3.5, etc.
+        elif isinstance(init, UnaryOper) and init.oper == '-' and isinstance(init.expr, Integer):
+            val = Constant(-init.expr.value, "i32")
+        elif isinstance(init, UnaryOper) and init.oper == '-' and isinstance(init.expr, Float):
+            val = Constant(-init.expr.value, "float")
+
+        else:
+            raise Exception(f"Inicializador global inválido para '{node.name}': {type(init).__name__}")
+
+        g = Global(node.name, typ, val)
+        self.module.add_global(g)
+
 
 
     # ======================================================
@@ -349,13 +402,16 @@ class IRGenerator:
         self.local_types[node.name] = llvm_type
 
     def _gen_var_decl_init(self, node: VarDeclInit):
-        typ_ast = node.typ
+        typ = node.typ
 
-        # Inicialización de arrays
-        if isinstance(typ_ast, ArrayType) and isinstance(node.init, list):
-            elem_type = self._map_type(typ_ast.elem_type)
-            size = self._eval_const_int(typ_ast.size)
-            arr_type = f"[{size} x {elem_type}]"
+        # -----------------------------------------------
+        # Declaración de ARRAY con inicialización por lista
+        # -----------------------------------------------
+        if isinstance(typ, ArrayType) and isinstance(node.init, list):
+            elem = self._map_type(typ.elem_type)
+            size = self._eval_const_int(typ.size)
+            arr_type = f"[{size} x {elem}]"
+
             ptr = self.builder.alloca(arr_type)
             self.locals[node.name] = ptr
             self.local_types[node.name] = arr_type
@@ -363,9 +419,9 @@ class IRGenerator:
             from ir.instr import GetElementPtr
 
             for idx, expr in enumerate(node.init):
-                index_val = Constant(idx, "i32")
-                elem_ptr = self.func.new_temp(f"{elem_type}*")
-                gep = GetElementPtr(ptr, index_val, elem_ptr)
+                index = Constant(idx, "i32")
+                elem_ptr = self.func.new_temp(f"{elem}*")
+                gep = GetElementPtr(ptr, index, elem_ptr)
                 self.builder.block.append(gep)
 
                 val = self._gen_expr(expr)
@@ -373,14 +429,31 @@ class IRGenerator:
 
             return
 
-        # Inicialización escalar
-        llvm_type = self._map_type(typ_ast)
+        # -----------------------------------------------
+        # Declaración de ARRAY sin lista → solo reservar
+        # -----------------------------------------------
+        if isinstance(typ, ArrayType):
+            elem = self._map_type(typ.elem_type)
+            size = self._eval_const_int(typ.size)
+            arr_type = f"[{size} x {elem}]"
+
+            ptr = self.builder.alloca(arr_type)
+            self.locals[node.name] = ptr
+            self.local_types[node.name] = arr_type
+            return
+
+        # -----------------------------------------------
+        # DECLARACIÓN ESCALAR CON INICIALIZACIÓN
+        # -----------------------------------------------
+        llvm_type = self._map_type(typ)
         ptr = self.builder.alloca(llvm_type)
+
         self.locals[node.name] = ptr
         self.local_types[node.name] = llvm_type
 
         val = self._gen_expr(node.init)
         self.builder.store(val, ptr)
+
 
     # ======================================================
     # Asignación
@@ -713,16 +786,27 @@ class IRGenerator:
         # ================================
         # IDENTIFICADORES
         # ================================
+                # ================================
+        # IDENTIFICADORES
+        # ================================
+                # ================================
+        # IDENTIFICADORES
+        # ================================
         if isinstance(node, Identifier):
             name = node.name
 
             # LOCAL
             if name in self.locals:
                 ptr = self.locals[name]
-                llvm_type = self.local_types[name]
+                llvm_type = self.local_types.get(name)
 
-                # Arrays locales: decaen a puntero al primer elemento (T*)
-                if llvm_type.startswith("["):
+                # Si no existe tipo registrado, asumimos i32
+                if llvm_type is None:
+                    llvm_type = "i32"
+                    self.local_types[name] = llvm_type
+
+                # Arrays locales → decaen a puntero T*
+                if isinstance(llvm_type, str) and llvm_type.startswith("["):
                     elem_type = self._infer_array_elem_type(name)
                     from ir.instr import GetElementPtr
                     zero = Constant(0, "i32")
@@ -731,16 +815,15 @@ class IRGenerator:
                     self.builder.block.append(gep)
                     return elem_ptr
 
-                # Escalares → load normal
                 return self.builder.load(ptr, llvm_type)
 
-            # GLOBAL
+            # GLOBAL "normal" (variable global)
             g = self.module.get_global(name)
             if g:
                 from ir.value import GlobalRef
                 ptr = GlobalRef(name, g.type)
 
-                if g.type.startswith("["):
+                if isinstance(g.type, str) and g.type.startswith("["):
                     elem_type = self._infer_array_elem_type(name)
                     from ir.instr import GetElementPtr
                     zero = Constant(0, "i32")
@@ -751,7 +834,13 @@ class IRGenerator:
 
                 return self.builder.load(ptr, g.type)
 
+            # 🔹 CONSTANTE GLOBAL ENTERA (como N)
+            if name in self.const_globals:
+                return Constant(self.const_globals[name], "i32")
+
             raise Exception(f"Variable '{name}' no encontrada")
+
+
 
         # ================================
         # ARRAY ACCESS
@@ -904,20 +993,55 @@ class IRGenerator:
     # ======================================================
 
     def _map_type(self, t):
-        if t is None:
-            return "void"
+        """
+        Convierte un tipo del AST a tipo LLVM.
+        Maneja correctamente:
+        - SimpleType
+        - ArrayType (globales y locales)
+        - ArrayType como parámetro (T*)
+        - FuncType (solo retorno)
+        """
 
-        if isinstance(t, ArrayType):
+        # ---------------------------------------------
+        # Tipos simples
+        # ---------------------------------------------
+        from bminor_ast import SimpleType, ArrayType, FuncType
+
+        if isinstance(t, SimpleType):
+            name = t.name
+            if name == "integer": return "i32"
+            if name == "float":   return "float"
+            if name == "boolean": return "i1"
+            if name == "char":    return "i8"
+            if name == "string":  return "i8*"   # puntero a chars
+            if name == "void":    return "void"
+            raise Exception(f"Tipo simple no soportado: {name}")
+
+        # ---------------------------------------------
+        # Arrays usados como parámetros → T*
+        # ---------------------------------------------
+        if isinstance(t, ArrayType) and self.func is not None:
+            # esto significa que estamos en parámetros de función
             elem = self._map_type(t.elem_type)
-            # Parámetros tipo array → T*
             return elem + "*"
 
-        name = t.name
-        if name == "integer": return "i32"
-        if name == "float": return "float"
-        if name == "boolean": return "i1"
-        if name == "char": return "i8"
-        if name == "void": return "void"
+        # ---------------------------------------------
+        # Arrays declarados (globales o locales) → [N x T]
+        # ---------------------------------------------
+        if isinstance(t, ArrayType):
+            if t.size is None:
+                raise Exception("Array declarado sin tamaño estático")
 
-        print(f"[Warning] Tipo no soportado: {name}")
-        return "i32"
+            elem = self._map_type(t.elem_type)
+            size = self._eval_const_int(t.size)
+            return f"[{size} x {elem}]"
+
+        # ---------------------------------------------
+        # Funciones → solo el tipo de retorno
+        # ---------------------------------------------
+        if isinstance(t, FuncType):
+            return self._map_type(t.ret_type)
+
+        raise Exception(f"Tipo no reconocido: {t}")
+
+

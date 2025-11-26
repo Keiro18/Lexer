@@ -1,0 +1,17 @@
+N: integer = 10;
+f: array [N] integer;
+
+main: function void() = {
+    i: integer;
+
+    f[0] = 0;
+    f[1] = 1;
+
+    for (i = 2; i < N; i = i + 1) {
+        f[i] = f[i - 1] + f[i - 2];
+    }
+
+    for (i = 0; i < N; i = i + 1) {
+        print f[i], " ";
+    }
+}
