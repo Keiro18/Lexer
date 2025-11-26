@@ -2,7 +2,7 @@
 
 **Universidad Tecnológica de Pereira – 2025**  
 **Curso:** Compiladores  
-**Autores:** *Luis Mario Franco Gómez*  
+**Autores:** *Andrés Felipe Mogollón - Felipe Borja Gutiérrez - Juan Dario Malagón*  
 **Lenguaje:** Python 3 + LLVM-like IR propio  
 
 ---
